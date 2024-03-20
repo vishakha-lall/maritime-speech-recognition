@@ -72,7 +72,7 @@ if __name__ == "__main__":
     parser.add_argument('--dropentry', type=float, default=0.0)
     parser.add_argument('--modeltype', type=str, default="base.en")
     parser.add_argument('--maxKBlen', type=int, default=1)
-    parser.add_argument('--prompt', type=str. default='<|startoftranscript|>')
+    parser.add_argument('--prompt', type=str, default='<|startoftranscript|>')
     args = parser.parse_args()
 
     logging.basicConfig(level=args.loglevel)
