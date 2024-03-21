@@ -23,7 +23,7 @@ if __name__ == "__main__":
     audio = split_audio.read_audio_file('temp/extracted_audio/extracted_audio.mp3', logger)
     split_audio.split_into_chunks(audio, logger)
 
-    previous_chunk_transcript = "We are analysing the recorded maritime communication from vessel Cosulich Adventurer "
+    previous_chunk_transcript = "The audio provided may have moments of silence, do not make up words to fill in extended times of silence. We are analysing the recorded maritime communication from vessel Cosulich Adventurer. "
     chunks_path = Path('temp/extracted_chunks')
     for chunk in sorted(os.listdir(chunks_path)):
         logger.info(f"Processing audio chunk {chunk}")

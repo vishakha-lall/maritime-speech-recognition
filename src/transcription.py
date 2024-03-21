@@ -52,7 +52,8 @@ def decode_audio(audio_features, args, logger):
         lm_weight=args['lm_weight'],
         ilm_weight=args['ilm_weight'],
         ilme_model=None,
-        prompt=args['prompt']
+        prompt=args['prompt'],
+        temperature=0
     )
     result = whisper.decode(model, audio_features.to(model.device), options)
     logger.info(f"Result: {result}")
