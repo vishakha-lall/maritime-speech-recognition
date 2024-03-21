@@ -21,15 +21,15 @@ def get_biasing_list(logger):
 #todo - generate initial prompt with vessel name
 
 def decode_audio(audio_features, args, logger):
-    if args.loadfrom != '':
-        biasing_model = torch.load(args.loadfrom)
+    if args['loadfrom'] != '':
+        biasing_model = torch.load(args['loadfrom'])
         biasing_model.eval()
         model = biasing_model.whisper
     else:
-        model = whisper.load_model(args.modeltype).eval()
+        model = whisper.load_model(args['modeltype']).eval()
         biasing_model = None
     tokenizer = whisper.tokenizer.get_tokenizer(model.is_multilingual, language="en")
-    biasproc = BiasingProcessor(tokenizer, args.biasinglist, ndistractors=args.maxKBlen, drop=args.dropentry)
+    biasproc = BiasingProcessor(tokenizer, args['biasinglist'], ndistractors=args['maxKBlen'], drop=args['dropentry'])
     biasing_list = get_biasing_list(logger)
     tokenized_words = []
     for word in biasing_list:
@@ -43,16 +43,16 @@ def decode_audio(audio_features, args, logger):
     options = whisper.DecodingOptions(
         language="en",
         without_timestamps=True,
-        beam_size=args.beamsize,
-        biasing=args.biasing,
+        beam_size=args['beamsize'],
+        biasing=args['biasing'],
         biasingmodule=biasing_model,
         origtree=origtree,
         fp16=False,
         shallowfusion=False,
-        lm_weight=args.lm_weight,
-        ilm_weight=args.ilm_weight,
+        lm_weight=args['lm_weight'],
+        ilm_weight=args['ilm_weight'],
         ilme_model=None,
-        prompt=args.prompt
+        prompt=args['prompt']
     )
     result = whisper.decode(model, audio_features.to(model.device), options)
     logger.debug(f"Result: {result}")
@@ -80,4 +80,4 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
 
     audio_features = read_audio_features(args.path, logger)
-    decode_audio(audio_features, args, logger)
+    decode_audio(audio_features, vars(args), logger)
