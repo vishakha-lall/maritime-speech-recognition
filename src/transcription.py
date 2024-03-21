@@ -55,7 +55,18 @@ def decode_audio(audio_features, args, logger):
         prompt=args['prompt']
     )
     result = whisper.decode(model, audio_features.to(model.device), options)
-    logger.info(f"Result: {result}")
+    compression_ratio_threshold = 2.4
+    logprob_threshold = -1.0
+    no_speech_threshold = 0.6
+    needs_fallback = False
+    if compression_ratio_threshold is not None and result.compression_ratio > compression_ratio_threshold:
+        needs_fallback = True
+    if logprob_threshold is not None and result.avg_logprob < logprob_threshold:
+        needs_fallback = True
+    if no_speech_threshold is not None and result.no_speech_prob > no_speech_threshold:
+        needs_fallback = True
+    if not needs_fallback:
+        logger.info(f"Result: {result}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
