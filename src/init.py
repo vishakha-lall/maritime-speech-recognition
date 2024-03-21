@@ -25,6 +25,7 @@ if __name__ == "__main__":
 
     previous_chunk_transcript = "<|startoftranscript|>"
     chunks_path = Path('temp/extracted_chunks')
+    transcription_text = ""
     for chunk in sorted(os.listdir(chunks_path)):
         logger.info(f"Processing audio chunk {chunk}")
         chunk_path = chunks_path / chunk
@@ -43,5 +44,7 @@ if __name__ == "__main__":
             "ilm_weight": 0,
             "prompt": previous_chunk_transcript
         }
-        transcription.decode_audio(audio_features, options, logger)
-        break
+        result = transcription.decode_audio(audio_features, options, logger)
+        if result is not None:
+            transcription_text += f" {result.text}"
+    logger.info(f"Detected transcript {transcription_text}")
