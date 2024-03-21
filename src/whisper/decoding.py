@@ -578,7 +578,6 @@ class DecodingTask:
                 self.tokenizer.encode(" " + prompt.strip()) if isinstance(prompt, str) else prompt
             )
             tokens = [self.tokenizer.sot_prev] + prompt_tokens[-(self.n_ctx // 2 - 1) :] + tokens
-        print(tokens)
         return tuple(tokens)
 
     def _get_suppress_tokens(self) -> Tuple[int]:
