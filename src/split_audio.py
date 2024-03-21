@@ -18,8 +18,8 @@ def create_export_path(logger):
     return export_folder
 
 def split_into_chunks(audio, logger):
-    logger.info(f"Splitting audio into 30s chunks")
-    chunks = make_chunks(audio, 30000)
+    logger.info(f"Splitting audio into 240s chunks")
+    chunks = make_chunks(audio, 240000)
     export_path = create_export_path(logger)
     for i, chunk in enumerate(chunks):
         chunk.export(f'{export_path}/chunk_{i}.mp3', format="mp3")
