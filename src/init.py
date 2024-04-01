@@ -6,6 +6,8 @@ import extract_audio
 import split_audio
 import audio_preprocessing
 import transcription
+import location_extraction
+import communication_level_extraction
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -25,7 +27,6 @@ if __name__ == "__main__":
 
     previous_chunk_transcript = "<|startoftranscript|>"
     chunks_path = Path('temp/extracted_chunks')
-    transcription_text = ""
     for chunk in sorted(os.listdir(chunks_path)):
         logger.info(f"Processing audio chunk {chunk}")
         chunk_path = chunks_path / chunk
@@ -46,5 +47,9 @@ if __name__ == "__main__":
         }
         result = transcription.decode_audio(audio_features, options, logger)
         if result is not None:
-            transcription_text += f" {result.text}"
-    logger.info(f"Detected transcript {transcription_text}")
+            logger.info(f"Detected transcript {result.text}")
+            location_matcher = location_extraction.create_matcher('data/location_labels', logger)
+            extracted_locations = location_extraction.find_matches(result.text, location_matcher, logger)
+            communication_level_matcher = communication_level_extraction.create_matcher('data/external_labels', 'data/internal_labels', logger)
+            communication_levels = communication_level_extraction.find_matches(result.text, communication_level_matcher, logger)
+            communication_level_extraction.find_communication_level(communication_levels, logger)
