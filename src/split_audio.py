@@ -5,6 +5,7 @@ from pathlib import Path
 import argparse
 import logging
 import csv
+import shutil
 
 def read_audio_file(path, logger):
     logger.info(f"Reading audio file: {path}")
@@ -15,6 +16,8 @@ def read_audio_file(path, logger):
 
 def create_export_path(logger):
     export_folder = Path.cwd() / 'temp/extracted_chunks'
+    if export_folder.exists() and export_folder.is_dir():
+        shutil.rmtree(export_folder)
     Path(export_folder).mkdir(parents=True, exist_ok=True)
     logger.debug(f'Export path created: {export_folder}')
     return export_folder
