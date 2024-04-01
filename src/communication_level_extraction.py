@@ -41,7 +41,7 @@ def find_matches(text, matcher, logger):
     communication_levels = {'internal':[], 'external':[]}
     for match_id, start, end, ratio, pattern in matches:
         logger.debug(f"Match found for entity {match_id} {doc[start:end]} as {pattern} with match confidence {ratio}")
-        if ratio > 84:
+        if ratio > 90:
             if match_id == "INT_COMM":
                 communication_levels['internal'].append(pattern)
             else:
@@ -53,10 +53,10 @@ def find_matches(text, matcher, logger):
 
 def find_communication_level(communication_levels, logger):
     logger.debug(f"Extracted communication {communication_levels}")
-    if len(communication_levels['internal']) > len(communication_levels['external']):
-        logger.info(f"Internal Communication with the following entities {communication_levels['internal']}")
-    else:
+    if len(communication_levels['external']) > len(communication_levels['internal']):
         logger.info(f"External Communication with the following entities {communication_levels['external']}")
+    else:
+        logger.info(f"Internal Communication with the following entities {communication_levels['internal']}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
