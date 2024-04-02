@@ -15,7 +15,7 @@ def read_audio_features(path, logger):
 def get_biasing_list(logger):
     with open("data/maritime_biasing_vocabulary.txt") as fin:
         rarewords = [word.strip() for word in fin]
-    logger.debug(f"Extracted rarewords: {rarewords}")
+    # logger.debug(f"Extracted rarewords: {rarewords}")
     return rarewords
 
 #todo - generate initial prompt with vessel name
@@ -59,18 +59,18 @@ def decode_audio(audio_features, args, logger):
     logprob_threshold = -1.0
     no_speech_threshold = 0.6
     needs_fallback = False
-    if compression_ratio_threshold is not None and result.compression_ratio > compression_ratio_threshold:
-        needs_fallback = True
-        logger.debug("Transcription was too repetitive")
-    if logprob_threshold is not None and result.avg_logprob < logprob_threshold:
-        needs_fallback = True
-        logger.debug("Transcription had low log probability")
-    if no_speech_threshold is not None and result.no_speech_prob > no_speech_threshold:
-        needs_fallback = True
-        logger.debug("Transcription had long silent sequences")
-    if not needs_fallback:
-        logger.info(f"Result: {result}")
-        return result
+    # if compression_ratio_threshold is not None and result.compression_ratio > compression_ratio_threshold:
+    #     needs_fallback = True
+    #     logger.debug("Transcription was too repetitive")
+    # if logprob_threshold is not None and result.avg_logprob < logprob_threshold:
+    #     needs_fallback = True
+    #     logger.debug("Transcription had low log probability")
+    # if no_speech_threshold is not None and result.no_speech_prob > no_speech_threshold:
+    #     needs_fallback = True
+    #     logger.debug("Transcription had long silent sequences")
+    # if not needs_fallback:
+    logger.info(f"Result: {result}")
+    return result
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
