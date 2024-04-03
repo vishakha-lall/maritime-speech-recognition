@@ -20,7 +20,10 @@ def create_export_path(logger):
         shutil.rmtree(export_folder)
     Path(export_folder).mkdir(parents=True, exist_ok=True)
     logger.debug(f'Export path created: {export_folder}')
-    return export_folder
+    export_folder_csv = Path.cwd() / 'temp/extracted_timestamps'
+    Path(export_folder_csv).mkdir(parents=True, exist_ok=True)
+    logger.debug(f'Export path for timestamps created: {export_folder_csv}')
+    return export_folder,export_folder_csv
 
 def split_on_silence(audio_segment, min_silence_len=1000, silence_thresh=-16, keep_silence=100,
                      seek_step=1):
@@ -54,17 +57,17 @@ def split_into_chunks(audio, logger):
         silence_thresh = -35,
         keep_silence = 4000
     )
-    export_path = create_export_path(logger)
+    export_path, export_folder_csv = create_export_path(logger)
     for i, chunk in enumerate(chunks):
         chunk.export(f'{export_path}/chunk_{i}.mp3', format="mp3")
     logger.info(f"Audio chunks saved to {export_path}")
-    f = open(f'{export_path}/timestamps.csv', 'w')
+    f = open(f'{export_folder_csv}/timestamps.csv', 'w')
     writer = csv.writer(f)
     writer.writerow(['chunk_id', 'start', 'end'])
     for i, timestamp in enumerate(timestamps):
         writer.writerow([i, timestamp[0], timestamp[1]])
     f.close()
-    logger.info(f"Chunk timestamps saved to {export_path}")
+    logger.info(f"Chunk timestamps saved to {export_folder_csv}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
