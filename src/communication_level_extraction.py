@@ -43,20 +43,36 @@ def find_matches(text, matcher, logger):
         logger.debug(f"Match found for entity {match_id} {doc[start:end]} as {pattern} with match confidence {ratio}")
         if ratio > 90:
             if match_id == "INT_COMM":
-                communication_levels['internal'].append(pattern)
+                communication_levels['internal'].append((pattern, ratio))
             else:
-                communication_levels['external'].append(pattern)
-    communication_levels['internal'] = list(set(communication_levels['internal']))
-    communication_levels['external'] = list(set(communication_levels['external']))
-    logger.info(f"Found communication {communication_levels}")
+                communication_levels['external'].append((pattern, ratio))
+    logger.debug(f"Found communication {communication_levels}")
     return communication_levels
 
 def find_communication_level(communication_levels, logger):
-    logger.debug(f"Extracted communication {communication_levels}")
-    if len(communication_levels['external']) > len(communication_levels['internal']):
-        logger.info(f"External Communication with the following entities {communication_levels['external']}")
+    weighted_confidence_on_occurance_internal = {}
+    weighted_confidence_on_occurance_external = {}
+    for (pattern, ratio) in communication_levels['internal']:
+        if pattern in weighted_confidence_on_occurance_internal:
+            weighted_confidence_on_occurance_internal[pattern] += ratio
+        else:
+            weighted_confidence_on_occurance_internal[pattern] = ratio
+    for (pattern, ratio) in communication_levels['external']:
+        if pattern in weighted_confidence_on_occurance_external:
+            weighted_confidence_on_occurance_external[pattern] += ratio
+        else:
+            weighted_confidence_on_occurance_external[pattern] = ratio
+    sorted_weighted_confidence_on_occurance_internal = sorted(weighted_confidence_on_occurance_internal.items(), key=lambda x:x[1])
+    sorted_weighted_confidence_on_occurance_external = sorted(weighted_confidence_on_occurance_external.items(), key=lambda x:x[1])
+    if len(sorted_weighted_confidence_on_occurance_external) == 0 and len(sorted_weighted_confidence_on_occurance_internal) == 0:
+        logger.info(f"Internal Communication with the following entities helmsman")
+    elif len(sorted_weighted_confidence_on_occurance_internal) == 0:
+        logger.info(f"External Communication with the following entities {sorted_weighted_confidence_on_occurance_external[-1][0]}")
     else:
-        logger.info(f"Internal Communication with the following entities {communication_levels['internal']}")
+        if sorted_weighted_confidence_on_occurance_external[-1][1] > sorted_weighted_confidence_on_occurance_internal[-1][1]:
+            logger.info(f"External Communication with the following entities {sorted_weighted_confidence_on_occurance_external[-1][0]}")
+        else:
+            logger.info(f"Internal Communication with the following entities {sorted_weighted_confidence_on_occurance_internal[-1][0]}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
