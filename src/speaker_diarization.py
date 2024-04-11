@@ -22,7 +22,8 @@ def create_export_path(logger, audio_name):
     logger.debug(f'Export path for speaker diarization timestamps created: {export_folder_csv}')
     return export_folder_csv
 
-def segment_audio_by_speakers(pipeline, audio_path, audio_name, logger):
+def segment_audio_by_speakers(audio_path, audio_name, logger):
+    pipeline = setup_pipeline(logger)
     output = get_speaker_diarization(pipeline, audio_path, logger)
     export_folder_csv = create_export_path(logger, audio_name)
     f = open(f'{export_folder_csv}/timestamps.csv', 'w')
@@ -60,5 +61,4 @@ if __name__ == "__main__":
     logging.info(f"Log level: {args.loglevel}")
     logger = logging.getLogger(__name__)
 
-    pipeline = setup_pipeline(logger)
-    segment_audio_by_speakers(pipeline, args.path, args.name, logger)
+    segment_audio_by_speakers(args.path, args.name, logger)
