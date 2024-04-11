@@ -54,7 +54,7 @@ def split_into_chunks(audio, logger):
     chunks, timestamps = split_on_silence (
         audio, 
         min_silence_len = 10000,
-        silence_thresh = -35,
+        silence_thresh = -45,
         keep_silence = 4000
     )
     export_path, export_folder_csv = create_export_path(logger)
