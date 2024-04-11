@@ -4,6 +4,7 @@ from pathlib import Path
 import argparse
 import logging
 import csv
+import shutil
 
 def setup_pipeline(logger):
     pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-3.1", use_auth_token="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")
@@ -17,7 +18,9 @@ def get_speaker_diarization(pipeline, audio_path, logger):
     return output
 
 def create_export_path(logger, audio_name):
-    export_folder_csv = Path.cwd() / 'temp/speaker_diarization' / audio_name
+    export_folder_csv = Path.cwd() / 'temp/extracted_timestamps/speaker_diarization' / audio_name
+    if export_folder_csv.exists() and export_folder_csv.is_dir():
+        shutil.rmtree(export_folder_csv)
     Path(export_folder_csv).mkdir(parents=True, exist_ok=True)
     logger.debug(f'Export path for speaker diarization timestamps created: {export_folder_csv}')
     return export_folder_csv

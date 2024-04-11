@@ -11,6 +11,7 @@ import transcription
 import location_extraction
 import communication_level_extraction
 import speaker_diarization
+import generate_subtitles
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -29,11 +30,15 @@ if __name__ == "__main__":
     split_audio.split_into_chunks(audio, logger)
 
     chunks_path = Path('temp/extracted_chunks')
-    for chunk in sorted(os.listdir(chunks_path)):
+    chunks_timestamps = pd.read_csv('temp/extracted_timestamps/timestamps.csv')
+
+    segments = []
+
+    for i, chunk in enumerate(sorted(os.listdir(chunks_path))):
         logger.info(f"Processing audio chunk {chunk}")
         chunk_path = chunks_path / chunk
         speaker_diarization.segment_audio_by_speakers(chunk_path, chunk[:-4], logger)
-        timestamps_path = Path('temp/speaker_diarization') / chunk
+        timestamps_path = Path('temp/extracted_timestamps/speaker_diarization') / chunk
         timestamps = pd.read_csv(timestamps_path / 'timestamps.csv')
         previous_segment_transcript = "<|startoftranscript|>"
         chunk_audio = AudioSegment.from_mp3(chunk_path)
@@ -58,14 +63,16 @@ if __name__ == "__main__":
             }
             result = transcription.decode_audio(audio_features, options, logger)
             if result is not None:
-                logger.info(f"{timestamps.at[row, 'speaker_id']} : {result.text}")
+                logger.info(f"{chunks_timestamps[chunks_timestamps['chunk_id']==i]['start'].item() + timestamps.at[row, 'start']} {timestamps.at[row, 'speaker_id']} : {result.text}")
+                segments.append(generate_subtitles.Segment(chunks_timestamps[chunks_timestamps['chunk_id']==i]['start'].item() + timestamps.at[row, 'start'], chunks_timestamps[chunks_timestamps['chunk_id']==i]['start'].item() + timestamps.at[row, 'end']), f'{timestamps.at[row, 'speaker_id']} : {result.text}')
                 location_matcher = location_extraction.create_matcher('data/location_labels', logger)
                 extracted_locations = location_extraction.find_matches(result.text, location_matcher, logger)
                 communication_level_matcher = communication_level_extraction.create_matcher('data/external_labels', 'data/internal_labels', logger)
                 communication_levels = communication_level_extraction.find_matches(result.text, communication_level_matcher, logger)
                 communication_level_extraction.find_communication_level(communication_levels, logger)
                 previous_segment_transcript = result.text
-                
+
+    generate_subtitles.generate_subtitle_file(segments)
     # previous_chunk_transcript = "<|startoftranscript|>"
     # chunks_path = Path('temp/extracted_chunks')
     # for chunk in sorted(os.listdir(chunks_path)):

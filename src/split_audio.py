@@ -65,7 +65,7 @@ def split_into_chunks(audio, logger):
     writer = csv.writer(f)
     writer.writerow(['chunk_id', 'start', 'end'])
     for i, timestamp in enumerate(timestamps):
-        writer.writerow([i, timestamp[0], timestamp[1]])
+        writer.writerow([i, timestamp[0]/1000, timestamp[1]/1000])
     f.close()
     logger.info(f"Chunk timestamps saved to {export_folder_csv}")
 
