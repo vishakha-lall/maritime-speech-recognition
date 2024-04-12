@@ -38,7 +38,7 @@ if __name__ == "__main__":
         logger.info(f"Processing audio chunk {chunk}")
         chunk_path = chunks_path / chunk
         speaker_diarization.segment_audio_by_speakers(chunk_path, chunk[:-4], logger)
-        timestamps_path = Path('temp/extracted_timestamps/speaker_diarization') / chunk
+        timestamps_path = Path('temp/extracted_timestamps/speaker_diarization') / chunk[:-4]
         timestamps = pd.read_csv(timestamps_path / 'timestamps.csv')
         previous_segment_transcript = "<|startoftranscript|>"
         chunk_audio = AudioSegment.from_mp3(chunk_path)
