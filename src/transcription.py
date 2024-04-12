@@ -55,7 +55,7 @@ def decode_audio(audio_features, args, logger):
         prompt=args['prompt']
     )
     result = whisper.decode(model, audio_features.to(model.device), options)
-    logger.info(f"Result: {result}")
+    logger.debug(f"Result: {result}")
     return result
 
 if __name__ == "__main__":
