@@ -68,6 +68,8 @@ def find_communication_level(communication_levels, logger):
         logger.info(f"Internal Communication with the following entities helmsman")
     elif len(sorted_weighted_confidence_on_occurance_internal) == 0:
         logger.info(f"External Communication with the following entities {sorted_weighted_confidence_on_occurance_external[-1][0]}")
+    elif len(sorted_weighted_confidence_on_occurance_external) == 0:
+        logger.info(f"Internal Communication with the following entities {sorted_weighted_confidence_on_occurance_internal[-1][0]}")
     else:
         if sorted_weighted_confidence_on_occurance_external[-1][1] > sorted_weighted_confidence_on_occurance_internal[-1][1]:
             logger.info(f"External Communication with the following entities {sorted_weighted_confidence_on_occurance_external[-1][0]}")
