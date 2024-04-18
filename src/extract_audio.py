@@ -24,7 +24,7 @@ def extract_audio(video, logger):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', type=str, required=True)
-    parser.add_argument('--loglevel', type=str, choices=['DEBUG','INFO'], default='DEBUG')
+    parser.add_argument('--loglevel', type=str, choices=['DEBUG','INFO'], default='INFO')
     args = parser.parse_args()
 
     logging.basicConfig(level=args.loglevel)

@@ -52,6 +52,9 @@ if __name__ == "__main__":
         timestamps = pd.read_csv(timestamps_path / 'timestamps.csv')
         previous_segment_transcript = "<|startoftranscript|>"
         chunk_audio = AudioSegment.from_mp3(chunk_path)
+        f = open(Path('temp/extracted_text') / f'{chunk[:-4]}.csv', 'w')
+        chunk_transcript_file = csv.writer(f)
+        chunk_transcript_file.writerow(['start', 'transcript'])
         for row in range(len(timestamps)):
             segment_audio = chunk_audio[timestamps.at[row, 'start']*1000:timestamps.at[row, 'end']*1000]
             segment_path = Path('temp/audio.mp3')
@@ -74,6 +77,7 @@ if __name__ == "__main__":
             result = transcription.decode_audio(audio_features, options, logger)
             if result is not None:
                 logger.info(f"{chunks_timestamps[chunks_timestamps['chunk_id']==i]['start'].item() + timestamps.at[row, 'start']} {timestamps.at[row, 'speaker_id']} : {result.text}")
+                chunk_transcript_file.writerow(chunks_timestamps[chunks_timestamps['chunk_id']==i]['start'].item() + timestamps.at[row, 'start'], result.text)
                 segments.append(generate_subtitles.Segment(chunks_timestamps[chunks_timestamps['chunk_id']==i]['start'].item() + timestamps.at[row, 'start'], chunks_timestamps[chunks_timestamps['chunk_id']==i]['start'].item() + timestamps.at[row, 'end'], f"{timestamps.at[row, 'speaker_id']} : {result.text}"))
                 location_matcher = location_extraction.create_matcher('data/location_labels', logger)
                 extracted_locations = location_extraction.find_matches(result.text, location_matcher, logger)
