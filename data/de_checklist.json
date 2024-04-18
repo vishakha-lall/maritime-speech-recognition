@@ -1,0 +1,73 @@
+{
+    "steering_failure": [
+        "engine room",
+        "steering room",
+        "risk",
+        "tug",
+        "emergency",
+        "port control"
+    ],
+    "squall": [
+        "adjust",
+        "speed",
+        "bridge",
+        "anchor station",
+        "engine room",
+        "port control"
+    ],
+    "tug_failure": [
+        "tug",
+        "bridge",
+        "master",
+        "captain",
+        "recover",
+        "replacement",
+        "terminal",
+        "port control"
+    ],
+    "total_black_out": [
+        "engine room",
+        "steering room",
+        "anchor",
+        "risk",
+        "port control",
+        "assist",
+        "tug"
+    ],
+    "bow_thruster_failure": [
+        "engine room",
+        "danger",
+        "anchor",
+        "master",
+        "captain",
+        "engage",
+        "replacement",
+        "tug",
+        "terminal",
+        "port control"
+    ],
+    "main_engine_failure": [
+        "engine room",
+        "danger",
+        "anchoring",
+        "captain",
+        "master",
+        "bridge",
+        "abort",
+        "tug",
+        "terminal",
+        "port control"
+    ],
+    "anchoring": [
+        "bridge",
+        "anchor",
+        "port control"
+    ],
+    "berthing": [
+        "bridge",
+        "mooring",
+        "port control",
+        "tug",
+        "terminal"
+    ]
+}
