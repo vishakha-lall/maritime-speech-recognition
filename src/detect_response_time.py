@@ -17,7 +17,7 @@ def find_nearest_chunk(timestamp_in_seconds, logger):
 
 def get_expected_response_tokens(demanding_event, logger):
     de_checklist = json.load(open('data/de_checklist.json'))
-    expected_tokens = [token for token in de_checklist[demanding_event]]
+    expected_tokens = [token for token in de_checklist[demanding_event]['expected_tokens']]
     logger.debug(f'Found expected tokens {expected_tokens}')
     return expected_tokens
 
@@ -45,7 +45,7 @@ def find_response_time(demanding_event, demanding_event_timestamp, logger):
     chunks_path = Path('temp/extracted_chunks')
     total_chunks = len(os.listdir(chunks_path))
     extracted_chunks_path = Path('temp/extracted_text')
-    for chunk in range[nearest_chunk, total_chunks-1]:
+    for chunk in range(nearest_chunk, total_chunks):
         chunk_transcripts = pd.read_csv(extracted_chunks_path / f'chunk_{chunk}.csv')
         for ind in chunk_transcripts.index:
             if is_match(chunk_transcripts['transcript'][ind], matcher, logger):
