@@ -52,7 +52,16 @@ def find_response_time(demanding_event, demanding_event_timestamp, logger):
                 logger.debug(f'First match for {demanding_event} found in chunk {chunk} at segment {chunk_transcripts['transcript'][ind]}')
                 return chunk_transcripts['start'][ind]
     return -1
-    
+
+def detect_response_time(demanding_event_timestamps_path):
+    demanding_event_timestamps = pd.read_csv(demanding_event_timestamps_path)
+    for index in demanding_event_timestamps.index:
+        response_time = find_response_time(demanding_event_timestamps['demanding_event'][index], demanding_event_timestamps['timestamp'][index], logger)
+        if response_time == -1:
+            logger.info(f'Response time could not be conclusively identified')
+        else:
+            logger.info(f'Response time for {demanding_event_timestamps['demanding_event'][index]} : {response_time}')
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', type=str, required=True)

@@ -14,6 +14,8 @@ import location_extraction
 import communication_level_extraction
 import speaker_diarization
 import generate_subtitles
+import detect_response_time
+import communication_match
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -25,7 +27,7 @@ if __name__ == "__main__":
     logging.info(f"Log level: {args.loglevel}")
     logger = logging.getLogger(__name__)
 
-    video = extract_audio.read_video_file(args.path, logger)
+    video = extract_audio.read_video_file(Path(args.path) / 'rendered.mp4', logger)
     extract_audio.extract_audio(video, logger)
 
     audio = split_audio.read_audio_file('temp/extracted_audio/extracted_audio.mp3', logger)
@@ -88,6 +90,10 @@ if __name__ == "__main__":
                 writer.writerow([result.text, level, entity])
 
     generate_subtitles.generate_subtitle_file(segments)
+    demanding_event_timestamp_path = Path(args.path) / 'de_timestamps.csv'
+    detect_response_time.detect_response_time(demanding_event_timestamp_path)
+    communication_match.get_communication_match(demanding_event_timestamp_path)
+    
     # previous_chunk_transcript = "<|startoftranscript|>"
     # chunks_path = Path('temp/extracted_chunks')
     # for chunk in sorted(os.listdir(chunks_path)):
