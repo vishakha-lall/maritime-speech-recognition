@@ -36,6 +36,14 @@ def find_match_score(de_start_timestamp, de_end_timestamp, demanding_event, logg
             true_response += chunk_transcripts['transcript'][ind]
     return nlp(true_response).similarity(nlp(expected_response))
 
+def get_communication_match(demanding_event_timestamps_path):
+    demanding_event_timestamps = pd.read_csv(demanding_event_timestamps_path)
+    for index in demanding_event_timestamps.index:
+        if index == len(demanding_event_timestamps.index) - 1:
+            print(find_match_score(demanding_event_timestamps['timestamp'][index], None, demanding_event_timestamps['demanding_event'][index], logger))
+        else:
+            print(find_match_score(demanding_event_timestamps['timestamp'][index], demanding_event_timestamps['timestamp'][index+1], demanding_event_timestamps['demanding_event'][index], logger))
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', type=str, required=True)
