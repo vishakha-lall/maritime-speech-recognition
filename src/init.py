@@ -2,6 +2,8 @@ import argparse
 import logging
 from pathlib import Path
 import os
+import csv
+import shutil
 import pandas as pd
 from pydub import AudioSegment
 import extract_audio
@@ -34,6 +36,14 @@ if __name__ == "__main__":
 
     segments = []
 
+    export_folder_csv = Path.cwd() / 'temp/extracted_communication_levels'
+    if export_folder_csv.exists() and export_folder_csv.is_dir():
+        shutil.rmtree(export_folder_csv)
+    Path(export_folder_csv).mkdir(parents=True, exist_ok=True)
+    f = open(f'{export_folder_csv}/communication_levels.csv', 'w')
+    writer = csv.writer(f)
+    writer.writerow(['transcript', 'level', 'entity'])
+    
     for i, chunk in enumerate(sorted(os.listdir(chunks_path))):
         logger.info(f"Processing audio chunk {chunk}")
         chunk_path = chunks_path / chunk
@@ -69,8 +79,9 @@ if __name__ == "__main__":
                 extracted_locations = location_extraction.find_matches(result.text, location_matcher, logger)
                 communication_level_matcher = communication_level_extraction.create_matcher('data/external_labels', 'data/internal_labels', logger)
                 communication_levels = communication_level_extraction.find_matches(result.text, communication_level_matcher, logger)
-                communication_level_extraction.find_communication_level(communication_levels, logger)
+                level, entity = communication_level_extraction.find_communication_level(communication_levels, logger)
                 previous_segment_transcript = result.text
+                writer.writerow([result.text, level, entity])
 
     generate_subtitles.generate_subtitle_file(segments)
     # previous_chunk_transcript = "<|startoftranscript|>"

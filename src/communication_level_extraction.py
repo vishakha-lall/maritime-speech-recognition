@@ -64,17 +64,28 @@ def find_communication_level(communication_levels, logger):
             weighted_confidence_on_occurance_external[pattern] = ratio
     sorted_weighted_confidence_on_occurance_internal = sorted(weighted_confidence_on_occurance_internal.items(), key=lambda x:x[1])
     sorted_weighted_confidence_on_occurance_external = sorted(weighted_confidence_on_occurance_external.items(), key=lambda x:x[1])
+    entity = ""
     if len(sorted_weighted_confidence_on_occurance_external) == 0 and len(sorted_weighted_confidence_on_occurance_internal) == 0:
-        logger.info(f"Internal Communication with the following entities helmsman")
+        entity = "helmsman"
+        logger.info(f"Internal Communication with the following entities {entity}")
+        return "internal", entity
     elif len(sorted_weighted_confidence_on_occurance_internal) == 0:
-        logger.info(f"External Communication with the following entities {sorted_weighted_confidence_on_occurance_external[-1][0]}")
+        entity = sorted_weighted_confidence_on_occurance_external[-1][0]
+        logger.info(f"External Communication with the following entities {entity}")
+        return "external", entity
     elif len(sorted_weighted_confidence_on_occurance_external) == 0:
-        logger.info(f"Internal Communication with the following entities {sorted_weighted_confidence_on_occurance_internal[-1][0]}")
+        entity = sorted_weighted_confidence_on_occurance_internal[-1][0]
+        logger.info(f"Internal Communication with the following entities {entity}")
+        return "internal", entity
     else:
         if sorted_weighted_confidence_on_occurance_external[-1][1] > sorted_weighted_confidence_on_occurance_internal[-1][1]:
-            logger.info(f"External Communication with the following entities {sorted_weighted_confidence_on_occurance_external[-1][0]}")
+            entity = sorted_weighted_confidence_on_occurance_external[-1][0]
+            logger.info(f"External Communication with the following entities {entity}")
+            return "external", entity
         else:
+            entity = sorted_weighted_confidence_on_occurance_internal[-1][0]
             logger.info(f"Internal Communication with the following entities {sorted_weighted_confidence_on_occurance_internal[-1][0]}")
+            return "internal", entity
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
