@@ -34,16 +34,7 @@ def find_match_score(de_start_timestamp, de_end_timestamp, demanding_event, logg
         chunk_transcripts = pd.read_csv(extracted_chunks_path / f'chunk_{chunk}.csv')
         for ind in chunk_transcripts.index:
             true_response += chunk_transcripts['transcript'][ind]
-    logger.info(true_response)
-    return nlp(true_response).similarity(nlp(expected_response))
-
-def get_communication_match(demanding_event_timestamps_path, logger):
-    demanding_event_timestamps = pd.read_csv(demanding_event_timestamps_path)
-    for index in demanding_event_timestamps.index:
-        if index == len(demanding_event_timestamps.index) - 1:
-            logger.info(f"Match score for demanding event {demanding_event_timestamps['demanding_event'][index]} :{find_match_score(demanding_event_timestamps['timestamp'][index], None, demanding_event_timestamps['demanding_event'][index], logger)}")
-        else:
-            logger.info(f"Match score for demanding event {demanding_event_timestamps['demanding_event'][index]} :{find_match_score(demanding_event_timestamps['timestamp'][index], demanding_event_timestamps['timestamp'][index+1], demanding_event_timestamps['demanding_event'][index], logger)}")
+    logger.info(f"Match score for demanding event {demanding_event} is {nlp(true_response).similarity(nlp(expected_response))}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -57,7 +48,4 @@ if __name__ == "__main__":
 
     demanding_event_timestamps = pd.read_csv(args.path)
     for index in demanding_event_timestamps.index:
-        if index == len(demanding_event_timestamps.index) - 1:
-            print(find_match_score(demanding_event_timestamps['timestamp'][index], None, demanding_event_timestamps['demanding_event'][index], logger))
-        else:
-            print(find_match_score(demanding_event_timestamps['timestamp'][index], demanding_event_timestamps['timestamp'][index+1], demanding_event_timestamps['demanding_event'][index], logger))
+        print(find_match_score(demanding_event_timestamps['timestamp_start'][index], demanding_event_timestamps['timestamp_end'][index], demanding_event_timestamps['demanding_event'][index], logger))

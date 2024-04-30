@@ -17,8 +17,8 @@ def format_time(seconds):
     formatted_time = f"{hours:02d}:{minutes:02d}:{seconds:01d},{milliseconds:03d}"
     return formatted_time
 
-def generate_subtitle_file(segments):
-    subtitle_file = f"subtitles.srt"
+def generate_subtitle_file(demanding_event, segments):
+    subtitle_file = f"subtitles_{demanding_event}.srt"
     text = ""
     for index, segment in enumerate(segments):
         segment_start = format_time(segment.start)

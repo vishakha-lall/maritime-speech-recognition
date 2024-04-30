@@ -50,17 +50,8 @@ def find_response_time(demanding_event, demanding_event_timestamp, logger):
         for ind in chunk_transcripts.index:
             if is_match(chunk_transcripts['transcript'][ind], matcher, logger):
                 logger.debug(f"First match for {demanding_event} found in chunk {chunk} at segment {chunk_transcripts['transcript'][ind]}")
-                return chunk_transcripts['start'][ind]
-    return -1
-
-def detect_response_time(demanding_event_timestamps_path, logger):
-    demanding_event_timestamps = pd.read_csv(demanding_event_timestamps_path)
-    for index in demanding_event_timestamps.index:
-        response_time = find_response_time(demanding_event_timestamps['demanding_event'][index], demanding_event_timestamps['timestamp'][index], logger)
-        if response_time == -1:
-            logger.info(f'Response time could not be conclusively identified')
-        else:
-            logger.info(f"Response time for {demanding_event_timestamps['demanding_event'][index]} : {response_time}")
+                logger.info(f"Response time for {demanding_event} : {chunk_transcripts['start'][ind]}")
+    logger.info(f'Response time could not be conclusively identified')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -74,8 +65,4 @@ if __name__ == "__main__":
 
     demanding_event_timestamps = pd.read_csv(args.path)
     for index in demanding_event_timestamps.index:
-        response_time = find_response_time(demanding_event_timestamps['demanding_event'][index], demanding_event_timestamps['timestamp'][index], logger)
-        if response_time == -1:
-            logger.info(f'Response time could not be conclusively identified')
-        else:
-            logger.info(f"Response time for {demanding_event_timestamps['demanding_event'][index]} : {response_time}")
+        response_time = find_response_time(demanding_event_timestamps['demanding_event'][index], demanding_event_timestamps['timestamp_start'][index], logger)

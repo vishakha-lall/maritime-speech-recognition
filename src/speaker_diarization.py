@@ -17,18 +17,18 @@ def get_speaker_diarization(pipeline, audio_path, logger):
     logger.debug(f"Speaker diarization output {list(output.itertracks(yield_label=True))}")
     return output
 
-def create_export_path(logger, audio_name):
-    export_folder_csv = Path.cwd() / 'temp/extracted_timestamps/speaker_diarization' / audio_name
+def create_export_path(demanding_event, logger, audio_name):
+    export_folder_csv = Path.cwd() / f'temp/extracted_timestamps/speaker_diarization/{demanding_event}' / audio_name
     if export_folder_csv.exists() and export_folder_csv.is_dir():
         shutil.rmtree(export_folder_csv)
     Path(export_folder_csv).mkdir(parents=True, exist_ok=True)
     logger.debug(f'Export path for speaker diarization timestamps created: {export_folder_csv}')
     return export_folder_csv
 
-def segment_audio_by_speakers(audio_path, audio_name, logger):
+def segment_audio_by_speakers(audio_path, audio_name, demanding_event, logger):
     pipeline = setup_pipeline(logger)
     output = get_speaker_diarization(pipeline, audio_path, logger)
-    export_folder_csv = create_export_path(logger, audio_name)
+    export_folder_csv = create_export_path(demanding_event, logger, audio_name)
     f = open(f'{export_folder_csv}/timestamps.csv', 'w')
     writer = csv.writer(f)
     writer.writerow(['speaker_id', 'start', 'end'])
