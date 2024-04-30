@@ -40,7 +40,7 @@ def split_on_demanding_event(audio_segment, demanding_event_timestamps_path, log
     exported_de_audio_paths = []
     for index in demanding_event_timestamps.index:
         de_audio_segment = audio_segment[demanding_event_timestamps['timestamp_start'][index]*1000:demanding_event_timestamps['timestamp_end'][index]*1000]
-        de_audio_path = f'{export_path}/{demanding_event_timestamps['demanding_event'][index]}.mp3'
+        de_audio_path = f"{export_path}/{demanding_event_timestamps['demanding_event'][index]}.mp3"
         de_audio_segment.export(de_audio_path, format='mp3')
         exported_de_audio_paths.append((demanding_event_timestamps['demanding_event'][index],de_audio_path))
         logger.info(f"Audio segment for demanding event {demanding_event_timestamps['demanding_event'][index]} saved as {de_audio_path}")
