@@ -30,13 +30,14 @@ def find_match_score(de_start_timestamp, de_end_timestamp, demanding_event, logg
         end_chunk = find_nearest_chunk(de_end_timestamp, logger)
     extracted_chunks_path = Path('temp/extracted_text')
     true_response = ""
-    for chunk in range(start_chunk, end_chunk+1):
+    for chunk in range(start_chunk, end_chunk):
         chunk_transcripts = pd.read_csv(extracted_chunks_path / f'chunk_{chunk}.csv')
         for ind in chunk_transcripts.index:
             true_response += chunk_transcripts['transcript'][ind]
+    logger.info(true_response)
     return nlp(true_response).similarity(nlp(expected_response))
 
-def get_communication_match(demanding_event_timestamps_path):
+def get_communication_match(demanding_event_timestamps_path, logger):
     demanding_event_timestamps = pd.read_csv(demanding_event_timestamps_path)
     for index in demanding_event_timestamps.index:
         if index == len(demanding_event_timestamps.index) - 1:

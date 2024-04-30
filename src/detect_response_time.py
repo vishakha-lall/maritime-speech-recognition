@@ -53,7 +53,7 @@ def find_response_time(demanding_event, demanding_event_timestamp, logger):
                 return chunk_transcripts['start'][ind]
     return -1
 
-def detect_response_time(demanding_event_timestamps_path):
+def detect_response_time(demanding_event_timestamps_path, logger):
     demanding_event_timestamps = pd.read_csv(demanding_event_timestamps_path)
     for index in demanding_event_timestamps.index:
         response_time = find_response_time(demanding_event_timestamps['demanding_event'][index], demanding_event_timestamps['timestamp'][index], logger)
