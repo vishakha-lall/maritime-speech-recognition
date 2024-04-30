@@ -1,4 +1,15 @@
 {
+    "collision": {
+      "expected_tokens": [
+        "master",
+        "emergency alarm",
+        "engine room",
+        "port control",
+        "vessel",
+        "ship"
+      ],
+      "expected_response": "Vessel to master checking for status of vessels and ships around. "
+    },
     "steering_failure": {
       "expected_tokens": [
         "engine room",
