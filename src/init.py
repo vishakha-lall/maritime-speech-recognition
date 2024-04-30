@@ -68,7 +68,7 @@ if __name__ == "__main__":
                 "loadfrom":'models/model.acc.best',
                 "biasinglist":'data/maritime_biasing_vocabulary.txt', 
                 "modeltype":'base.en',
-                "beamsize": 3,
+                "beamsize": 5,
                 "biasing": True,
                 "maxKBlen": 1,
                 "dropentry":0.0,
