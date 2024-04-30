@@ -1,89 +1,98 @@
 {
     "steering_failure": {
-        "expected_tokens": [
-            "engine room",
-            "steering room",
-            "risk",
-            "tug",
-            "emergency",
-            "port control"
-        ],
-        "expected_response": "Vessel to engine room or steering room checking for status. Establishing emergency steering. Identify risk and avoid collision. Warning signal to other vessels. Vessel to port control/vessel traffic system(VTS)/ terminal updating steering failure. Need to arrange assistive tug."},
+      "expected_tokens": [
+        "engine room",
+        "steering room",
+        "risk",
+        "tug",
+        "emergency",
+        "port control"
+      ],
+      "expected_response": "Vessel to engine room or steering room checking for status. Establishing emergency steering. Identify risk and avoid collision. Warning signal to other vessels. Vessel to port control/vessel traffic system(VTS)/ terminal updating steering failure. Need to arrange assistive tug."
+    },
     "squall": {
-        "expected_tokens": [
-            "adjust",
-            "speed",
-            "bridge",
-            "anchor station",
-            "engine room",
-            "port control"
-        ],
-        "expected_response": "Adjust speed. Vessel to bridge teams to look out. Vessel to anchor station to stand by. Vessel to engine room reporting squall. Warning signal to other vessels. Vessel to port control/vessel traffic system(VTS)/ terminal updating squall."},
+      "expected_tokens": [
+        "adjust",
+        "speed",
+        "bridge",
+        "anchor station",
+        "engine room",
+        "port control"
+      ],
+      "expected_response": "Adjust speed. Vessel to bridge teams to look out. Vessel to anchor station to stand by. Vessel to engine room reporting squall. Warning signal to other vessels. Vessel to port control/vessel traffic system(VTS)/ terminal updating squall."
+    },
     "tug_failure": {
-        "expected_tokens": [
-            "tug",
-            "bridge",
-            "master",
-            "captain",
-            "recover",
-            "replacement",
-            "terminal",
-            "port control"
-        ],
-        "expected_response": "Vessel to tug confirming safety of tug and crew, check status and nature of failure, check recovery time. Check if the vessel is in danger. Vessel to ship master/bridge team updating tug failure. Decide whether to wait for recovery or request for replacement tug. Vessel to port control/vessel traffic system(VTS)/ terminal updating tug failure."},
+      "expected_tokens": [
+        "tug",
+        "bridge",
+        "master",
+        "captain",
+        "recover",
+        "replacement",
+        "terminal",
+        "port control"
+      ],
+      "expected_response": "Vessel to tug confirming safety of tug and crew, check status and nature of failure, check recovery time. Check if the vessel is in danger. Vessel to ship master/bridge team updating tug failure. Decide whether to wait for recovery or request for replacement tug. Vessel to port control/vessel traffic system(VTS)/ terminal updating tug failure."
+    },
     "total_black_out": {
-        "expected_tokens": [
-            "engine room",
-            "steering room",
-            "anchor",
-            "risk",
-            "port control",
-            "assist",
-            "tug"
-        ],
-        "expected_response": "Vessel to engine room or steering room checking for status on black out and recovery time. Identify risk. Warning signal to other vessels. Vessel to anchor station to stand by. Vessel to port control/vessel traffic system(VTS)/ terminal updating black out. Decide arranging for assistive tugs."},
+      "expected_tokens": [
+        "engine room",
+        "steering room",
+        "anchor",
+        "risk",
+        "port control",
+        "assist",
+        "tug"
+      ],
+      "expected_response": "Vessel to engine room or steering room checking for status on black out and recovery time. Identify risk. Warning signal to other vessels. Vessel to anchor station to stand by. Vessel to port control/vessel traffic system(VTS)/ terminal updating black out. Decide arranging for assistive tugs."
+    },
     "bow_thruster_failure": {
-        "expected_tokens": [
-            "engine room",
-            "danger",
-            "anchor",
-            "master",
-            "captain",
-            "engage",
-            "replacement",
-            "tug",
-            "terminal",
-            "port control"
-        ],
-        "expected_response": "Vessel to engine room or steering room checking for status and recovery time. Identify if vessel is in danger. Vessel to anchor station to prepare for anchoring. Vessel to ship master or bridge team to update status. Decide to use replacement tug. Continue or abort. Vessel to port control/vessel traffic system(VTS)/ terminal updating failure."},
+      "expected_tokens": [
+        "engine room",
+        "danger",
+        "anchor",
+        "master",
+        "captain",
+        "engage",
+        "replacement",
+        "tug",
+        "terminal",
+        "port control"
+      ],
+      "expected_response": "Vessel to engine room or steering room checking for status and recovery time. Identify if vessel is in danger. Vessel to anchor station to prepare for anchoring. Vessel to ship master or bridge team to update status. Decide to use replacement tug. Continue or abort. Vessel to port control/vessel traffic system(VTS)/ terminal updating failure."
+    },
     "main_engine_failure": {
-        "expected_tokens": [
-            "engine room",
-            "danger",
-            "anchoring",
-            "captain",
-            "master",
-            "bridge",
-            "abort",
-            "tug",
-            "terminal",
-            "port control"
-        ],
-        "expected_response": "Vessel to engine room to check status and recovery time. Identify if vessel is in danger. Prepare for anchoring. Warning signal to other vessels to stay clear. Vessel to ship master or bridge team to update status. Continue or abort. Decide to use replacement tug. Vessel to port control/vessel traffic system(VTS)/ terminal updating failure."},
+      "expected_tokens": [
+        "engine room",
+        "danger",
+        "anchoring",
+        "captain",
+        "master",
+        "bridge",
+        "abort",
+        "tug",
+        "terminal",
+        "port control"
+      ],
+      "expected_response": "Vessel to engine room to check status and recovery time. Identify if vessel is in danger. Prepare for anchoring. Warning signal to other vessels to stay clear. Vessel to ship master or bridge team to update status. Continue or abort. Decide to use replacement tug. Vessel to port control/vessel traffic system(VTS)/ terminal updating failure."
+    },
     "anchoring": {
-        "expected_tokens": [
-            "bridge",
-            "anchor",
-            "port control"
-        ],
-        "expected_response": "Vessel to anchor station to update anchoring status. Vessel to bridge team to update anchoring status. Vessel to port control/vessel traffic system(VTS)/ terminal updating anchoring."},
+      "expected_tokens": [
+        "bridge",
+        "anchor",
+        "port control"
+      ],
+      "expected_response": "Vessel to anchor station to update anchoring status. Vessel to bridge team to update anchoring status. Vessel to port control/vessel traffic system(VTS)/ terminal updating anchoring."
+    },
     "berthing": {
-        "expected_tokens": [
-            "bridge",
-            "mooring",
-            "port control",
-            "tug",
-            "terminal"
-        ],
-        "expected_response": "Vessel to bridge team to update berthing status. Vessel to mooring stations to update berthing status. Vessel to tugs to update berthing status. Vessel to port control/vessel traffic system(VTS)/ terminal updating berthing."},
-}
+      "expected_tokens": [
+        "bridge",
+        "mooring",
+        "port control",
+        "tug",
+        "terminal"
+      ],
+      "expected_response": "Vessel to bridge team to update berthing status. Vessel to mooring stations to update berthing status. Vessel to tugs to update berthing status. Vessel to port control/vessel traffic system(VTS)/ terminal updating berthing."
+    }
+    
+  }

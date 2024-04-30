@@ -62,7 +62,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', type=str, default='temp/audio.pt')
     parser.add_argument('--loglevel', type=str, choices=['DEBUG','INFO'], default='DEBUG')
-    parser.add_argument('--beamsize', type=int, default=3)
+    parser.add_argument('--beamsize', type=int, default=5)
     parser.add_argument('--loadfrom', type=str, default="models/model.acc.best")
     parser.add_argument('--biasing', action="store_true", default=True)
     parser.add_argument('--lm_weight', type=float, default=0)
