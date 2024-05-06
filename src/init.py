@@ -29,12 +29,11 @@ if __name__ == "__main__":
 
     demanding_event_timestamp_path = Path(args.path) / 'de_timestamps.csv'
     demanding_event_timestamp = pd.read_csv(demanding_event_timestamp_path)
-    video = extract_audio.read_video_file(Path(args.path) / 'rendered.mp4', logger)
+    video = extract_audio.read_video_file(Path(args.path) / 'raw.mp4', logger)
     extract_audio.extract_audio(video, logger)
 
     audio = split_audio.read_audio_file('temp/extracted_audio/extracted_audio.mp3', logger)
     de_audio_paths = split_audio.split_on_demanding_event(audio, demanding_event_timestamp_path, logger)
-
     for demanding_event, audio_path in de_audio_paths:
         audio = split_audio.read_audio_file(audio_path, logger)
         split_audio.split_into_chunks(audio, demanding_event, logger)
@@ -51,7 +50,10 @@ if __name__ == "__main__":
         f = open(f'{export_folder_csv}/communication_levels.csv', 'w')
         writer = csv.writer(f)
         writer.writerow(['transcript', 'level', 'entity'])
-        
+        export_folder_transcript_csv = Path.cwd() / f'temp/extracted_text/{demanding_event}'
+        if export_folder_transcript_csv.exists() and export_folder_transcript_csv.is_dir():
+            shutil.rmtree(export_folder_transcript_csv)
+        Path(export_folder_transcript_csv).mkdir(parents=True, exist_ok=True)
         for i, chunk in enumerate(sorted(os.listdir(chunks_path))):
             logger.info(f"Processing audio chunk {chunk}")
             chunk_path = chunks_path / chunk
@@ -60,10 +62,6 @@ if __name__ == "__main__":
             timestamps = pd.read_csv(timestamps_path / 'timestamps.csv')
             previous_segment_transcript = "<|startoftranscript|>"
             chunk_audio = AudioSegment.from_mp3(chunk_path)
-            export_folder_transcript_csv = Path.cwd() / f'temp/extracted_text/{demanding_event}'
-            if export_folder_transcript_csv.exists() and export_folder_transcript_csv.is_dir():
-                shutil.rmtree(export_folder_transcript_csv)
-            Path(export_folder_transcript_csv).mkdir(parents=True, exist_ok=True)
             f = open(Path(export_folder_transcript_csv) / f'{chunk[:-4]}.csv', 'w')
             chunk_transcript_file = csv.writer(f)
             chunk_transcript_file.writerow(['start', 'transcript'])
@@ -98,6 +96,8 @@ if __name__ == "__main__":
                     level, entity = communication_level_extraction.find_communication_level(communication_levels, logger)
                     previous_segment_transcript = result.text
                     writer.writerow([result.text, level, entity])
+            f.close()
+        f.close()
 
         generate_subtitles.generate_subtitle_file(demanding_event, segments)
         detect_response_time.find_response_time(demanding_event, demanding_event_timestamp[demanding_event_timestamp['demanding_event'] == demanding_event]['timestamp_start'].item(), logger)

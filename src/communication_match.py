@@ -13,8 +13,8 @@ def get_expected_response_text(demanding_event, logger):
     logger.debug(f'Found expected response {expected_response}')
     return expected_response
 
-def find_nearest_chunk(timestamp_in_seconds, logger):
-    chunks_timestamps = pd.read_csv('temp/extracted_timestamps/timestamps.csv')
+def find_nearest_chunk(timestamp_in_seconds, demanding_event, logger):
+    chunks_timestamps = pd.read_csv(f'temp/extracted_timestamps/{demanding_event}/timestamps.csv')
     greatest_smaller_than_timestamp = chunks_timestamps['start'][chunks_timestamps['start'] <= timestamp_in_seconds].max()
     nearest_chunk = chunks_timestamps[chunks_timestamps['start'] == greatest_smaller_than_timestamp].index[0]
     logger.debug(f'Found nearest chunk to timestamp {nearest_chunk}')
@@ -22,13 +22,9 @@ def find_nearest_chunk(timestamp_in_seconds, logger):
 
 def find_match_score(de_start_timestamp, de_end_timestamp, demanding_event, logger):
     expected_response = get_expected_response_text(demanding_event, logger)
-    start_chunk = find_nearest_chunk(de_start_timestamp, logger)
-    chunks_path = Path('temp/extracted_chunks')
-    if de_end_timestamp is None:
-        end_chunk = len(os.listdir(chunks_path))
-    else:
-        end_chunk = find_nearest_chunk(de_end_timestamp, logger)
-    extracted_chunks_path = Path('temp/extracted_text')
+    start_chunk = find_nearest_chunk(de_start_timestamp, demanding_event, logger)
+    end_chunk = find_nearest_chunk(de_end_timestamp, demanding_event, logger)
+    extracted_chunks_path = Path(f'temp/extracted_text/{demanding_event}')
     true_response = ""
     for chunk in range(start_chunk, end_chunk):
         chunk_transcripts = pd.read_csv(extracted_chunks_path / f'chunk_{chunk}.csv')

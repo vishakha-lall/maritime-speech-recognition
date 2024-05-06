@@ -5,11 +5,12 @@ import logging
 import os
 from pathlib import Path
 import spacy
+import csv
 from spaczz.matcher import FuzzyMatcher
 nlp = spacy.blank("en")
 
-def find_nearest_chunk(timestamp_in_seconds, logger):
-    chunks_timestamps = pd.read_csv('temp/extracted_timestamps/timestamps.csv')
+def find_nearest_chunk(demanding_event, timestamp_in_seconds, logger):
+    chunks_timestamps = pd.read_csv(f'temp/extracted_timestamps/{demanding_event}/timestamps.csv')
     greatest_smaller_than_timestamp = chunks_timestamps['start'][chunks_timestamps['start'] <= timestamp_in_seconds].max()
     nearest_chunk = chunks_timestamps[chunks_timestamps['start'] == greatest_smaller_than_timestamp].index[0]
     logger.debug(f'Found nearest chunk to timestamp {nearest_chunk}')
@@ -39,19 +40,25 @@ def is_match(text, matcher, logger):
     return False
 
 def find_response_time(demanding_event, demanding_event_timestamp, logger):
-    nearest_chunk = find_nearest_chunk(demanding_event_timestamp, logger)
+    nearest_chunk = find_nearest_chunk(demanding_event, demanding_event_timestamp, logger)
     expected_tokens = get_expected_response_tokens(demanding_event, logger)
     matcher = create_matcher(expected_tokens)
-    chunks_path = Path('temp/extracted_chunks')
+    chunks_path = Path(f'temp/extracted_chunks/{demanding_event}')
     total_chunks = len(os.listdir(chunks_path))
-    extracted_chunks_path = Path('temp/extracted_text')
+    extracted_chunks_path = Path(f'temp/extracted_text/{demanding_event}')
+    found_match = False
     for chunk in range(nearest_chunk, total_chunks):
         chunk_transcripts = pd.read_csv(extracted_chunks_path / f'chunk_{chunk}.csv')
         for ind in chunk_transcripts.index:
             if is_match(chunk_transcripts['transcript'][ind], matcher, logger):
+                found_match = True
                 logger.debug(f"First match for {demanding_event} found in chunk {chunk} at segment {chunk_transcripts['transcript'][ind]}")
                 logger.info(f"Response time for {demanding_event} : {chunk_transcripts['start'][ind]}")
-    logger.info(f'Response time could not be conclusively identified')
+                break
+        if found_match:
+            break
+    if not found_match:
+        logger.info(f'Response time for {demanding_event} could not be conclusively identified')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
