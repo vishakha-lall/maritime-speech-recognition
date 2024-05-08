@@ -19,21 +19,36 @@ import communication_match
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--path', type=str, required=True)
+    parser.add_argument('--video_path', type=str, required=True)
+    parser.add_argument('--csv_path', type=str, required=True)
     parser.add_argument('--loglevel', type=str, choices=['DEBUG','INFO'], default='INFO')
+    parser.add_argument('--results_path', type=str, default='temp')
+    parser.add_argument('--subject_id', type=str, default='test_subject')
     args = parser.parse_args()
 
     logging.basicConfig(level=args.loglevel)
     logging.info(f"Log level: {args.loglevel}")
     logger = logging.getLogger(__name__)
 
-    demanding_event_timestamp_path = Path(args.path) / 'de_timestamps.csv'
+    demanding_event_timestamp_path = Path(args.csv_path)
     demanding_event_timestamp = pd.read_csv(demanding_event_timestamp_path)
-    video = extract_audio.read_video_file(Path(args.path) / 'raw.mp4', logger)
+    video = extract_audio.read_video_file(Path(args.video_path) / 'raw.mp4', logger)
+    logger.info("Read video file and csv file")
     extract_audio.extract_audio(video, logger)
 
     audio = split_audio.read_audio_file('temp/extracted_audio/extracted_audio.mp3', logger)
     de_audio_paths = split_audio.split_on_demanding_event(audio, demanding_event_timestamp_path, logger)
+
+    results_path = args.results_path / args.subject_id
+
+    export_folder_response_time = results_path / 'extracted_response_times'
+    if export_folder_response_time.exists() and export_folder_response_time.is_dir():
+        shutil.rmtree(export_folder_response_time)
+    Path(export_folder_response_time).mkdir(parents=True, exist_ok=True)
+    f = open(f'{export_folder_response_time}/response_times.csv', 'w')
+    writer_response_time = csv.writer(f)
+    writer_response_time.writerow(['demanding_event', 'response_time'])
+
     for demanding_event, audio_path in de_audio_paths:
         audio = split_audio.read_audio_file(audio_path, logger)
         split_audio.split_into_chunks(audio, demanding_event, logger)
@@ -43,7 +58,7 @@ if __name__ == "__main__":
 
         segments = []
 
-        export_folder_csv = Path.cwd() / f'temp/extracted_communication_levels/{demanding_event}'
+        export_folder_csv = results_path / f'extracted_communication_levels/{demanding_event}'
         if export_folder_csv.exists() and export_folder_csv.is_dir():
             shutil.rmtree(export_folder_csv)
         Path(export_folder_csv).mkdir(parents=True, exist_ok=True)
@@ -100,5 +115,6 @@ if __name__ == "__main__":
         f.close()
 
         generate_subtitles.generate_subtitle_file(demanding_event, segments)
-        detect_response_time.find_response_time(demanding_event, demanding_event_timestamp[demanding_event_timestamp['demanding_event'] == demanding_event]['timestamp_start'].item(), logger)
+        response_time = detect_response_time.find_response_time(demanding_event, demanding_event_timestamp[demanding_event_timestamp['demanding_event'] == demanding_event]['timestamp_start'].item(), logger)
+        writer_response_time.writerow([demanding_event, response_time])
         communication_match.find_match_score(demanding_event_timestamp[demanding_event_timestamp['demanding_event'] == demanding_event]['timestamp_start'].item(), demanding_event_timestamp[demanding_event_timestamp['demanding_event'] == demanding_event]['timestamp_end'].item(), demanding_event, logger)

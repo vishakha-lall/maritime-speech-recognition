@@ -46,19 +46,15 @@ def find_response_time(demanding_event, demanding_event_timestamp, logger):
     chunks_path = Path(f'temp/extracted_chunks/{demanding_event}')
     total_chunks = len(os.listdir(chunks_path))
     extracted_chunks_path = Path(f'temp/extracted_text/{demanding_event}')
-    found_match = False
     for chunk in range(nearest_chunk, total_chunks):
         chunk_transcripts = pd.read_csv(extracted_chunks_path / f'chunk_{chunk}.csv')
         for ind in chunk_transcripts.index:
             if is_match(chunk_transcripts['transcript'][ind], matcher, logger):
-                found_match = True
                 logger.debug(f"First match for {demanding_event} found in chunk {chunk} at segment {chunk_transcripts['transcript'][ind]}")
                 logger.info(f"Response time for {demanding_event} : {chunk_transcripts['start'][ind]}")
-                break
-        if found_match:
-            break
-    if not found_match:
-        logger.info(f'Response time for {demanding_event} could not be conclusively identified')
+                return chunk_transcripts['start'][ind]
+    logger.info(f'Response time for {demanding_event} could not be conclusively identified')
+    return -1
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
