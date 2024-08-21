@@ -1,84 +1,86 @@
-from pydub import AudioSegment
-from pyannote.audio import Pipeline
-import torch
-from pathlib import Path
-import argparse
-import logging
 import csv
-import shutil
+import torch
+import logging
+import argparse
+import torchaudio
+
+from pathlib import Path
+
+from pyannote.audio import Pipeline
+
 
 def read_audio_file(path, logger):
-    logger.info(f"Reading audio file: {path}")
+    logger.info(f'Reading audio file: {path}')
     audio_path = Path(path)
-    audio = AudioSegment.from_mp3(audio_path)
-    logger.debug(f"Audio file: {audio}")
-    return audio
+    audio, sample_rate = torchaudio.load(audio_path)
+    return audio, sample_rate
 
-def create_export_path(logger):
-    export_folder = Path.cwd() / 'temp/extracted_chunks'
-    if export_folder.exists() and export_folder.is_dir():
-        shutil.rmtree(export_folder)
-    Path(export_folder).mkdir(parents=True, exist_ok=True)
-    logger.debug(f'Export path created: {export_folder}')
-    export_folder_csv = Path.cwd() / 'temp/extracted_timestamps'
+
+def create_export_path(demanding_event, logger):
+    export_folder_csv = Path.cwd(
+    ) / f'temp/extracted_timestamps/{demanding_event}'
     Path(export_folder_csv).mkdir(parents=True, exist_ok=True)
-    logger.debug(f'Export path for timestamps created: {export_folder_csv}')
-    return export_folder,export_folder_csv
+    logger.info(f'Export path for timestamps created: {export_folder_csv}')
+    return export_folder_csv
+
 
 def setup_pipeline(logger):
-    pipeline = Pipeline.from_pretrained("pyannote/voice-activity-detection", use_auth_token="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")
+    pipeline = Pipeline.from_pretrained(
+        "pyannote/voice-activity-detection", use_auth_token="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")
     pipeline.to(torch.device("cuda"))
-    logger.debug("Model loaded for voice activity detection")
+    logger.info('Model loaded for voice activity detection')
     return pipeline
 
-def get_voice_activity_detection(pipeline, audio_path, logger):
-    output = pipeline(audio_path)
-    logger.debug(f"Voice activity detection output {list(output.itertracks(yield_label=True))}")
+
+def get_voice_activity_detection(pipeline, audio, sample_rate, logger):
+    logger.info('Starting voice activity detection')
+    output = pipeline({"waveform": audio, "sample_rate": sample_rate})
+    logger.info('Completed voice activity detection')
+    logger.debug(f'Voice activity detection output {output}')
     return output
 
-def get_segments(pipeline, audio_path, logger):
-    output = get_voice_activity_detection(pipeline, audio_path, logger)
-    previous_segment_start = 0
-    previous_segment_end = 0
+
+def get_segments(pipeline, audio, sample_rate, logger):
+    output = get_voice_activity_detection(pipeline, audio, sample_rate, logger)
     segments = []
-    for segment, _, _ in output.itertracks(yield_label=True):
-        if segment.start - previous_segment_end > 10:
-            segments.append((previous_segment_start, previous_segment_end))
-            previous_segment_start = segment.start
-            previous_segment_end = segment.end
-        else:
-            previous_segment_end = segment.end
-    if segment.start - previous_segment_end > 10:
-        segments.append((previous_segment_start, previous_segment_end))
+    max_length = 10 * 1000
+    for speech in output.get_timeline().support():
+        start = int(speech.start * 1000)
+        end = int(speech.end * 1000)
+        while start < end:
+            segment_end = min(start + max_length, end)
+            segments.append((start, segment_end))
+            start = segment_end
+    logger.debug(
+        f'Number of segments detected by voice activity detection {len(segments)}')
     return segments
 
-def split_into_chunks(pipeline, audio_path, logger):
-    audio = read_audio_file(audio_path, logger)
-    logger.info(f"Splitting audio by voice activity detection")
-    segments = get_segments(pipeline, audio_path, logger)
-    export_path, export_folder_csv = create_export_path(logger)
-    f = open(f'{export_folder_csv}/chunk_timestamps.csv', 'w')
+
+def split_into_chunks(audio, sample_rate, demanding_event, logger):
+    pipeline = setup_pipeline(logger)
+    segments = get_segments(pipeline, audio, sample_rate, logger)
+    export_path = create_export_path(demanding_event, logger)
+    f = open(f'{export_path}/chunk_timestamps.csv', 'w')
     writer = csv.writer(f)
     writer.writerow(['chunk_id', 'start', 'end'])
     for i, segment in enumerate(segments):
-        print(segment)
-        audio_chunk=audio[segment[0]*1000:segment[1]*1000]
-        audio_chunk.export(f'{export_path}/chunk_{i}.mp3', format="mp3")
         writer.writerow([i, segment[0], segment[1]])
     f.close()
-    logger.info(f"Audio chunks saved to {export_path}")
-    logger.info(f"Chunk timestamps saved to {export_folder_csv}")
+    logger.info(f'Chunk timestamps saved to {export_path}')
+    return segments
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', type=str, required=True)
-    parser.add_argument('--loglevel', type=str, choices=['DEBUG','INFO'], default='DEBUG')
+    parser.add_argument('--name', type=str, required=True)
+    parser.add_argument('--loglevel', type=str,
+                        choices=['DEBUG', 'INFO'], default='DEBUG')
     args = parser.parse_args()
 
     logging.basicConfig(level=args.loglevel)
-    logging.info(f"Log level: {args.loglevel}")
+    logging.info(f'Log level: {args.loglevel}')
     logger = logging.getLogger(__name__)
 
-    pipeline = setup_pipeline(logger)
-    split_into_chunks(pipeline, args.path, logger)
-
+    audio, sample_rate = read_audio_file(args.path, logger)
+    split_into_chunks(audio, sample_rate, args.name, logger)

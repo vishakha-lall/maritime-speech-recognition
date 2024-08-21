@@ -1,8 +1,11 @@
-from pathlib import Path
 import shutil
 import ffmpeg
-import argparse
 import logging
+import argparse
+
+from tqdm import tqdm
+from pathlib import Path
+
 
 def read_video_file(path, logger):
     logger.info(f"Reading video file: {path}")
@@ -10,6 +13,7 @@ def read_video_file(path, logger):
     video = ffmpeg.input(video_path)
     logger.debug(f"Video file: {video}")
     return video
+
 
 def create_export_path(logger):
     export_folder = Path.cwd() / 'temp/extracted_audio'
@@ -19,15 +23,20 @@ def create_export_path(logger):
     logger.debug(f'Export path created: {export_folder}')
     return export_folder
 
+
 def extract_audio(video, logger):
     export_folder = create_export_path(logger)
-    video.output(str(export_folder / 'extracted_audio.mp3'), acodec='mp3').run()
+    logger.info('Beginning audio extraction')
+    video.output(str(export_folder / 'extracted_audio.mp3'),
+                 acodec='mp3').run(quiet=True)
     logger.info(f'Audio extracted and saved to {export_folder}')
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', type=str, required=True)
-    parser.add_argument('--loglevel', type=str, choices=['DEBUG','INFO'], default='INFO')
+    parser.add_argument('--loglevel', type=str,
+                        choices=['DEBUG', 'INFO'], default='INFO')
     args = parser.parse_args()
 
     logging.basicConfig(level=args.loglevel)
