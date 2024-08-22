@@ -11,7 +11,7 @@ import split_audio_by_voice_activity_detection
 
 from tqdm import tqdm
 from pathlib import Path
-from communication_analysis import get_communication_entities
+from communication_analysis import get_communication_adherance, get_communication_entities, setup_pipeline
 
 
 def create_export_path(results_path, demanding_event, logger):
@@ -45,6 +45,7 @@ if __name__ == "__main__":
         'temp/extracted_audio/extracted_audio.mp3', demanding_event_timestamp_path, logger)
 
     model = transcription_v2.load_model('./models/transcription_model', logger)
+    llm_model, llm_tokenizer = setup_pipeline(logger)
 
     results_path = Path(args.results_path) / args.subject_id
     full_transcript_df = pd.DataFrame()
@@ -93,9 +94,10 @@ if __name__ == "__main__":
         logger.info(
             f'Transcript for {args.subject_id} {demanding_event} saved in {results_path_demanding_event}')
         get_communication_entities(
-            transcript_by_segment_and_speaker, results_path_demanding_event, logger)
-
+            transcript_by_segment_and_speaker, results_path_demanding_event, llm_model, llm_tokenizer, logger)
+        get_communication_adherance(
+            transcript_by_segment_and_speaker, demanding_event, results_path_demanding_event, llm_model, llm_tokenizer, logger)
     full_transcript_df.to_csv(results_path / 'transcript.csv')
 
-    video_utils.generate_subtitle_file(
-        results_path, full_transcript_df.to_dict('records'), args.video_path)
+    # video_utils.generate_subtitle_file(
+    #     results_path, full_transcript_df.to_dict('records'), args.video_path)
