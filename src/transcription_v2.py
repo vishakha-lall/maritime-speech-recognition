@@ -10,7 +10,6 @@ def load_model(path, logger):
 
 
 def get_transcript_for_segment(pipeline, audio, sample_rate, logger):
-    print(audio.shape)
     result = pipeline({"raw": audio.numpy().squeeze(),
                       "sampling_rate": sample_rate})
     logger.debug(f'Transcription result {result}')

@@ -74,10 +74,8 @@ if __name__ == "__main__":
                 speaker = segment_by_speaker[2]
                 logger.debug(
                     f'Processing segment between {segment_by_speaker_start} and {segment_by_speaker_end}')
-                print(audio.shape)
                 segment_audio = audio[:, int(segment_by_speaker_start * sample_rate / 1000):int(
                     segment_by_speaker_end * sample_rate / 1000)]
-                print(segment_audio.shape)
                 segment_transcript = transcription_v2.get_transcript_for_segment(
                     model, segment_audio, sample_rate, logger)
                 if segment_transcript != '':
