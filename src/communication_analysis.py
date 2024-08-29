@@ -182,14 +182,14 @@ def find_match_in_expected_checklist(extracted_items, demanding_event, logger):
             if len(matches) > 0:
                 logger.debug(f'Checklist item {item["item"]} completed')
                 checklist_adherance.append(
-                    {"checklist_item": item["item"], "completed": True})
+                    {"checklist_item": item["item"], "completed": True, "importance": item["importance"]})
                 item_matched = True
                 break
         if not item_matched:
             checklist_adherance.append(
-                {"checklist_item": item["item"], "completed": False})
-    response_correctness = (sum(
-        1 for item in checklist_adherance if item["completed"] is True) / len(checklist_adherance)) * 100
+                {"checklist_item": item["item"], "completed": False, "importance": item["importance"]})
+    response_correctness = (sum(item["importance"] for item in checklist_adherance if item["completed"]
+                            is True) / sum(item["importance"] for item in checklist_adherance)) * 100
     return response_correctness, checklist_adherance
 
 
@@ -313,7 +313,7 @@ def get_communication_adherance(transcript, demanding_event, path, model, tokeni
     if demanding_event == "main_engine_failure" or demanding_event == "squall":
         with open(f'{path}/checklist_adherance.csv', mode='w', newline='') as file:
             writer = csv.DictWriter(
-                file, fieldnames=['checklist_item', 'completed'])
+                file, fieldnames=['checklist_item', 'completed', 'importance'])
             writer.writeheader()
             for item in checklist_adherance:
                 writer.writerow(item)

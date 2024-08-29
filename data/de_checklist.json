@@ -5,23 +5,23 @@
   },
   "squall": {
     "checklist_items": [
-      {"item":"Updated bridge team","tokens":["bridge","captain"]},
-      {"item":"Updated engine room","tokens":["engine","engineer"]},
-      {"item":"Updated other vessels","tokens":["vessel","ship", "container"]},
-      {"item":"Updated port control","tokens":["port control","control"]},
-      {"item":"Updated vessel traffic system","tokens":["vessel traffic system","vts"]},
-      {"item":"Kept achoring stations on standby","tokens":["anchoring station", "anchor"]} 
+      {"item":"Updated bridge team","importance":5,"tokens":["bridge","captain"]},
+      {"item":"Updated engine room","importance":5,"tokens":["engine","engineer"]},
+      {"item":"Updated other vessels","importance":5,"tokens":["vessel","ship", "container"]},
+      {"item":"Updated port control","importance":5,"tokens":["port control","control"]},
+      {"item":"Updated vessel traffic system","importance":5,"tokens":["vessel traffic system","vts"]},
+      {"item":"Kept achoring stations on standby","importance":5,"tokens":["anchoring station", "anchor"]} 
     ]
   },
   "main_engine_failure": {
     "checklist_items": [
-      {"item":"Contacted engine room to check status and recovery time","tokens":["engine","engineer"]},
-      {"item":"Updated bridge team","tokens":["bridge","captain"]},
-      {"item":"Updated other vessels","tokens":["vessel","ship", "container"]},
-      {"item":"Updated port control","tokens":["port control","control"]},
-      {"item":"Updated vessel traffic system","tokens":["vessel traffic system","vts"]},
-      {"item":"Kept achoring stations on standby","tokens":["anchoring station", "anchor"]}, 
-      {"item":"Contacted tug assistance","tokens":["tug"]} 
+      {"item":"Contacted engine room to check status and recovery time","importance":5,"tokens":["engine","engineer"]},
+      {"item":"Updated bridge team","importance":5,"tokens":["bridge","captain"]},
+      {"item":"Updated other vessels","importance":5,"tokens":["vessel","ship", "container"]},
+      {"item":"Updated port control","importance":5,"tokens":["port control","control"]},
+      {"item":"Updated vessel traffic system","importance":5,"tokens":["vessel traffic system","vts"]},
+      {"item":"Kept achoring stations on standby","importance":5,"tokens":["anchoring station", "anchor"]}, 
+      {"item":"Contacted tug assistance","importance":5,"tokens":["tug"]} 
     ]
   }
 }
