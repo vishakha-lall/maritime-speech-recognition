@@ -56,7 +56,8 @@ if __name__ == "__main__":
 
     session = get_session_by_id(args.session_id)
     client = get_client_by_id(session.client_id)
-    results_path = Path(args.results_path) / str(session.date) / f'{client.alias}_{session.subject_id}' / f'exer_{session.exercise_id}'
+    results_path = Path(args.results_path) / str(session.date) / \
+        f'{client.alias}_{session.subject_id}' / f'exer_{session.exercise_id}'
     full_transcript_df = pd.DataFrame()
 
     for demanding_event, audio, sample_rate in de_audio:
@@ -109,10 +110,10 @@ if __name__ == "__main__":
         transcript_df.to_csv(results_path_demanding_event / 'transcript.csv')
         logger.info(
             f'Transcript for {session.subject_id} {demanding_event.type} saved in {results_path_demanding_event}')
-        get_communication_entities(
-            transcript_by_segment_and_speaker, results_path_demanding_event, llm_model, llm_tokenizer, logger)
+        get_communication_entities(session.id, demanding_event.id, transcript_by_segment_and_speaker,
+                                   results_path_demanding_event, llm_model, llm_tokenizer, logger)
         get_communication_adherance(
-            transcript_by_segment_and_speaker, demanding_event.type, results_path_demanding_event, llm_model, llm_tokenizer, logger)
+            transcript_by_segment_and_speaker, session, demanding_event, results_path_demanding_event, llm_model, llm_tokenizer, logger)
     full_transcript_df.to_csv(results_path / 'transcript.csv')
 
     # video_utils.generate_subtitle_file(

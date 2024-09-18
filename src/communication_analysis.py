@@ -17,6 +17,11 @@ from spaczz.matcher import FuzzyMatcher
 from lmformatenforcer.integrations.transformers import \
     build_transformers_prefix_allowed_tokens_fn
 
+from checklist_item_adherence_orm_crud import create_checklist_item_adherence
+from checklist_item_orm_crud import get_checklist_item_by_demanding_event_id
+from checklist_prompt_orm_crud import get_checklist_prompt_by_client_id_demanding_event_id
+from extracted_entity_orm_crud import create_extracted_entities
+
 
 def setup_pipeline(logger):
     quantization_config = BitsAndBytesConfig(load_in_4bit=True)
@@ -99,7 +104,7 @@ def extract_entity(text, matcher, logger):
     return None, None
 
 
-def get_communication_entities(transcript, path, model, tokenizer, logger):
+def get_communication_entities(session_id, demanding_event_id, transcript, path, model, tokenizer, logger):
     matcher = create_matcher('data/external_labels',
                              'data/internal_labels', logger)
     inputs = [
@@ -138,6 +143,8 @@ def get_communication_entities(transcript, path, model, tokenizer, logger):
         segment_entity, orient='index').reset_index()
     entity_df.columns = ['segment_id', 'addressee', 'communication_level']
     entity_df.to_csv(f'{path}/extracted_entities.csv')
+    create_extracted_entities(session_id, demanding_event_id, entity_df['segment_id'].to_list(
+    ), entity_df['addressee'].to_list(), entity_df['communication_level'].to_list())
     logger.info(f'Extracted entities stored to {path}')
 
 
@@ -151,12 +158,9 @@ def generate_formatted_transcript(transcript, logger):
     return formatted_transcript
 
 
-def get_prompt_for_demanding_event(demanding_event):
-    de_prompts = json.load(open('data/de_prompts.json'))
-    if demanding_event == "collision":
-        formatted_de_prompt = f'{de_prompts[demanding_event]}{Vessels.schema_json()}.'
-    if demanding_event == "main_engine_failure" or demanding_event == "squall":
-        formatted_de_prompt = f'{de_prompts[demanding_event]}{Checklist.schema_json()}.'
+def get_prompt_for_demanding_event(session, demanding_event):
+    de_prompt = get_checklist_prompt_by_client_id_demanding_event_id(session.client_id, demanding_event.id)
+    formatted_de_prompt = f'{de_prompt}{Checklist.schema_json()}.'
     return formatted_de_prompt
 
 
@@ -169,46 +173,26 @@ def create_matcher_for_tokens(tokens, logger):
     return matcher
 
 
-def find_match_in_expected_checklist(extracted_items, demanding_event, logger):
+def find_match_in_expected_checklist(session_id, extracted_items, demanding_event, logger):
     nlp = spacy.blank("en")
-    expected_checklist = json.load(
-        open('data/de_checklist.json'))[demanding_event]["checklist_items"]
+    expected_checklist = get_checklist_item_by_demanding_event_id(demanding_event.id)
     checklist_adherance = []
     for item in expected_checklist:
         item_matched = False
-        matcher = create_matcher_for_tokens(item["tokens"], logger)
+        matcher = create_matcher_for_tokens(item.tokens, logger)
         for extracted_item in extracted_items:
-            matches = matcher(nlp(extracted_item))
+            matches = matcher(nlp(extracted_item["item"]))
             if len(matches) > 0:
-                logger.debug(f'Checklist item {item["item"]} completed')
+                logger.debug(f'Checklist item {item.description} completed')
                 checklist_adherance.append(
-                    {"checklist_item": item["item"], "completed": True, "importance": item["importance"]})
+                    {"checklist_item": item.description, "completed": True, "importance": item.importance, "completion_time": extracted_item["start_time"]/1000})
+                create_checklist_item_adherence(session_id, demanding_event.id, item.id, True, extracted_item["start_time"]/1000)
                 item_matched = True
-                break
         if not item_matched:
             checklist_adherance.append(
-                {"checklist_item": item["item"], "completed": False, "importance": item["importance"]})
-    response_correctness = (sum(item["importance"] for item in checklist_adherance if item["completed"]
-                            is True) / sum(item["importance"] for item in checklist_adherance)) * 100
-    return response_correctness, checklist_adherance
-
-
-class Vessel(BaseModel):
-    vessel_name: str
-    start_time: float = Field(..., multipleOfPrecision=0.01)
-
-    class Config:
-        schema_extra = {
-            "properties": {
-                "start_time": {
-                    "multipleOfPrecision": 0.01
-                }
-            }
-        }
-
-
-class Vessels(BaseModel):
-    vessels: List["Vessel"] = Field(max_items=10)
+                {"checklist_item": item["item"], "completed": False, "importance": item["importance"], "completion_time": None})
+            create_checklist_item_adherence(session_id, demanding_event.id, item.id, True)
+    return checklist_adherance
 
 
 class ChecklistItem(BaseModel):
@@ -260,19 +244,13 @@ def split_transcript(transcript, split_size=50):
         yield transcript[i:i + split_size]
 
 
-def get_communication_adherance(transcript, demanding_event, path, model, tokenizer, logger):
+def get_communication_adherance(transcript, session, demanding_event, path, model, tokenizer, logger):
     all_responses_for_demanding_event = []
     for partial_transcript in split_transcript(transcript):
-        inputs = [{"role": "system", "content": get_prompt_for_demanding_event(demanding_event)}, {
+        inputs = [{"role": "system", "content": get_prompt_for_demanding_event(session, demanding_event)}, {
             "role": "user", "content": f"Transcript - {generate_formatted_transcript(partial_transcript, logger)}"}]
-        if demanding_event == "collision":
-            parser = JsonSchemaParser(Vessels.schema())
-            prefix_function = build_transformers_prefix_allowed_tokens_fn(
-                tokenizer, parser)
-        if demanding_event == "main_engine_failure" or demanding_event == "squall":
-            parser = JsonSchemaParser(Checklist.schema())
-            prefix_function = build_transformers_prefix_allowed_tokens_fn(
-                tokenizer, parser)
+        parser = JsonSchemaParser(Checklist.schema())
+        prefix_function = build_transformers_prefix_allowed_tokens_fn(tokenizer, parser)
         tokenized_inputs = tokenizer.apply_chat_template(
             inputs, tokenize=False, add_generation_prompt=True)
         tokenized_inputs = tokenizer(
@@ -287,33 +265,13 @@ def get_communication_adherance(transcript, demanding_event, path, model, tokeni
         responses = extract_from_model_response(decoded_output, logger)
         if responses:
             all_responses_for_demanding_event.extend(responses)
-    if demanding_event == "collision":
-        vessels = all_responses_for_demanding_event
-        if vessels:
-            response_correctness = len(vessels)/6
-            if response_correctness > 1:
-                response_correctness = 1
-            response_time_in_minutes = float(vessels[0]["start_time"])/1000/60
-    if demanding_event == "main_engine_failure" or demanding_event == "squall":
-        checklist_items = all_responses_for_demanding_event
-        if checklist_items:
-            completed_checklist_items = list(
-                set([record['item'] for record in checklist_items]))
-            response_correctness, checklist_adherance = find_match_in_expected_checklist(
-                completed_checklist_items, demanding_event, logger)
-            response_time_in_minutes = float(
-                checklist_items[0]["start_time"])/1000/60
-    with open(f'{path}/response_analysis.csv', mode='w', newline='') as file:
-        writer = csv.DictWriter(
-            file, fieldnames=['response_correctness', 'response_time_in_minutes'])
-        writer.writeheader()
-        writer.writerow({'response_correctness': response_correctness,
-                        'response_time_in_minutes': response_time_in_minutes})
-    logger.info(f'Extracted analysis stored to {path}')
-    if demanding_event == "main_engine_failure" or demanding_event == "squall":
+    checklist_items = all_responses_for_demanding_event
+    if checklist_items:
+        checklist_adherance = find_match_in_expected_checklist(
+            session.id, checklist_items, demanding_event, logger)
         with open(f'{path}/checklist_adherance.csv', mode='w', newline='') as file:
             writer = csv.DictWriter(
-                file, fieldnames=['checklist_item', 'completed', 'importance'])
+                file, fieldnames=['checklist_item', 'completed', 'importance', 'completion_time'])
             writer.writeheader()
             for item in checklist_adherance:
                 writer.writerow(item)

@@ -26,6 +26,15 @@ def get_subject_by_id(id):
     return subject
 
 
+def get_subject_by_alias(alias):
+    session = get_session()
+    subject = session.query(Subject).filter(
+        Subject.alias == alias
+    ).first()
+    session.close()
+    return subject
+
+
 def get_all_subjects():
     session = get_session()
     subjects = session.query(Subject).all()
@@ -35,11 +44,14 @@ def get_all_subjects():
 
 def get_all_subjects_by_client_id(client_id):
     session = get_session()
-    subjects = session.query(Subject).filter(Subject.client_id == client_id).all()
+    subjects = session.query(Subject).filter(
+        Subject.client_id == client_id).all()
     session.close()
     return subjects
+
 
 if __name__ == "__main__":
     print(f"All records in table subject {get_all_subjects()}")
     print(f"Subject with id 1 {get_subject_by_id(1)}")
+    print(f"Subject with alias cos01 {get_subject_by_alias('cos01')}")
     print(f"Subjects with client_id 1 {get_all_subjects_by_client_id(1)}")

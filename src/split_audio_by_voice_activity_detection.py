@@ -26,7 +26,7 @@ def create_export_path(demanding_event, logger):
 
 def setup_pipeline(logger):
     pipeline = Pipeline.from_pretrained(
-        "pyannote/voice-activity-detection", use_auth_token="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")
+        "pyannote/voice-activity-detection", use_auth_token="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")
     pipeline.to(torch.device("cuda"))
     logger.info('Model loaded for voice activity detection')
     return pipeline

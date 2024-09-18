@@ -29,7 +29,7 @@ def create_export_path(demanding_event, logger):
 
 def setup_pipeline(logger):
     pipeline = Pipeline.from_pretrained(
-        "pyannote/speaker-diarization-3.1", use_auth_token="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")
+        "pyannote/speaker-diarization-3.1", use_auth_token="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")
     pipeline.to(torch.device("cuda"))
     logger.info('Model loaded for speaker diarization')
     return pipeline
