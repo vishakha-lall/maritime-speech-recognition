@@ -11,12 +11,19 @@ class DemandingEvent(Base):
     __tablename__ = 'demanding_event'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    type = Column(Enum('collision', 'squall',
-                  'main_engine_failure'), nullable=False)
+    type = Column(Enum('Collision Avoidance', 'Main Engine Failure',
+                  'Severe Storm', 'Steering Failure', 'Squall', 'Tug Failure', 'Total Black Out', 'Bow Thruster Failure'), nullable=False)
     client_id = Column(Integer, nullable=False)
 
     def __repr__(self):
         return f"<DemandingEvent(id={self.id}, type={self.type}, client={self.client_id})>"
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'demanding_event': self.type,
+            'client_id': self.client_id
+        }
 
 
 def get_demanding_event_by_id(id):
@@ -41,6 +48,12 @@ def get_all_demanding_events():
     session.close()
     return events
 
+
+def get_all_demanding_events_by_client_id(client_id):
+    session = get_session()
+    events = session.query(DemandingEvent).filter(DemandingEvent.client_id == client_id).all()
+    session.close()
+    return events
 
 if __name__ == "__main__":
     print(f"All records in table demanding_event {get_all_demanding_events()}")

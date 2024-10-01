@@ -36,6 +36,14 @@ def get_session_by_date_subject_id_exercise_id_client_id(date, subject_id, exerc
     return recording_session
 
 
+def get_session_by_subject_id_exercise_id(subject_id, exercise_id):
+    session = get_session()
+    recording_session = session.query(Session).filter(
+        Session.subject_id == subject_id, Session.exercise_id == exercise_id).first()
+    session.close()
+    return recording_session
+
+
 def get_all_sessions():
     session = get_session()
     recording_sessions = session.query(Session).all()

@@ -2,6 +2,7 @@ import shutil
 import logging
 import argparse
 import split_audio
+from subject_orm_crud import get_subject_by_id
 import video_utils
 import pandas as pd
 import transcription_v2
@@ -44,7 +45,6 @@ if __name__ == "__main__":
 
     demanding_event_session_mappings = get_demanding_event_session_mapping_by_session_id(
         args.session_id)
-
     video_utils.extract_audio(Path(args.video_path),
                               Path('temp/extracted_audio/'))
 
@@ -56,18 +56,17 @@ if __name__ == "__main__":
 
     session = get_session_by_id(args.session_id)
     client = get_client_by_id(session.client_id)
+    subject = get_subject_by_id(session.subject_id)
     results_path = Path(args.results_path) / str(session.date) / \
-        f'{client.alias}_{session.subject_id}' / f'exer_{session.exercise_id}'
+        f'{subject.alias}' / f'exer_{session.exercise_id}'
     full_transcript_df = pd.DataFrame()
-
     for demanding_event, audio, sample_rate in de_audio:
         logger.info(
             f'Processing demanding event {demanding_event.type} for {session.subject_id}')
         demanding_event_session_mapping = get_demanding_event_session_mapping_by_session_id_demanding_event_id(
             session.id, demanding_event.id)
         demanding_event_start, demanding_event_end = demanding_event_session_mapping.time_start, demanding_event_session_mapping.time_end
-        results_path_demanding_event = create_export_path(
-            results_path, demanding_event.type, logger)
+        results_path_demanding_event = create_export_path(results_path, demanding_event.type, logger)
         with concurrent.futures.ThreadPoolExecutor() as executor:
             future_speaker_map = executor.submit(
                 speaker_diarization.build_speaker_map, audio, sample_rate, demanding_event.type, logger)
@@ -108,6 +107,8 @@ if __name__ == "__main__":
         full_transcript_df = pd.concat(
             [full_transcript_df, transcript_df], ignore_index=True)
         transcript_df.to_csv(results_path_demanding_event / 'transcript.csv')
+        # transcript_df = pd.read_csv(results_path_demanding_event / 'transcript.csv')
+        # transcript_by_segment_and_speaker = transcript_df.to_dict('records')
         logger.info(
             f'Transcript for {session.subject_id} {demanding_event.type} saved in {results_path_demanding_event}')
         get_communication_entities(session.id, demanding_event.id, transcript_by_segment_and_speaker,

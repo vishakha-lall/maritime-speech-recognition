@@ -67,12 +67,12 @@ def find_communication_level(text, matcher, logger):
     matches = matcher(doc)
     if len(matches) > 0:
         logger.debug(f'Fuzzy matching for {text} is {matches[0]}')
-        match_id, _, _, ratio, _ = matches[0]
+        match_id, _, _, ratio, entity = matches[0]
         if ratio > 90:
             if match_id == "INT_COMM":
-                return "internal"
+                return entity, "internal"
             else:
-                return "external"
+                return entity, "external"
 
 
 def generate_input(text, logger):
@@ -94,9 +94,9 @@ def extract_entity(text, matcher, logger):
         try:
             json_obj = json.loads(json_str)
             addressee = json_obj["addressee"]
-            communication_level = find_communication_level(
+            communication_entity, communication_level = find_communication_level(
                 addressee, matcher, logger)
-            return addressee, communication_level
+            return communication_entity, communication_level
         except json.JSONDecodeError as e:
             logger.debug(f"Error decoding JSON {json_str}: {e}")
         except Exception as e:
@@ -108,7 +108,11 @@ def get_communication_entities(session_id, demanding_event_id, transcript, path,
     matcher = create_matcher('data/external_labels',
                              'data/internal_labels', logger)
     inputs = [
-        {"role": "system", "content": f"You are an asistant to understand the maritime communication done by a trainee pilot during a simulated exercise with the trainer who takes multiple roles based on the situation. You will be given a dialogue spoken by the trainee. Your job is to identify in that dialogue, who the trainee is communicating with if it is specified. Note that the addressee should be a word from the dialogue. Give your response in the following json schema: {Entity.schema_json()}."}
+        {"role": "system", "content": f"""You are an assistant tasked with analyzing maritime communication during a simulated exercise involving a trainee pilot and a trainer who takes on multiple roles based on the situation. In this scenario, the trainee's own vessel is named Cosulich Adventurer. You will be given dialogue spoken by the trainee. Your job is to identify, in that dialogue, who the trainee is communicating with, if it is specified.
+Additional Instructions:
+1. If the trainee is communicating with someone explicitly mentioned (e.g., 'Control', 'Keppel', 'Engineer'), identify that person or group.
+2. If it is not explicitly mentioned but can be inferred based on context (e.g., engine room, bridge team), provide the best inference along with reasoning.
+3. If it is unclear who the trainee is communicating with, state 'Trainer' and do not guess. Give your response in the following json schema: {Entity.schema_json()}."""}
     ]
     logger.debug(f'Prompt for Large Language Model - {inputs}')
     parser = JsonSchemaParser(Entity.schema())
@@ -159,7 +163,8 @@ def generate_formatted_transcript(transcript, logger):
 
 
 def get_prompt_for_demanding_event(session, demanding_event):
-    de_prompt = get_checklist_prompt_by_client_id_demanding_event_id(session.client_id, demanding_event.id)
+    de_prompt = get_checklist_prompt_by_client_id_demanding_event_id(
+        session.client_id, demanding_event.id)
     formatted_de_prompt = f'{de_prompt}{Checklist.schema_json()}.'
     return formatted_de_prompt
 
@@ -175,7 +180,8 @@ def create_matcher_for_tokens(tokens, logger):
 
 def find_match_in_expected_checklist(session_id, extracted_items, demanding_event, logger):
     nlp = spacy.blank("en")
-    expected_checklist = get_checklist_item_by_demanding_event_id(demanding_event.id)
+    expected_checklist = get_checklist_item_by_demanding_event_id(
+        demanding_event.id)
     checklist_adherance = []
     for item in expected_checklist:
         item_matched = False
@@ -184,19 +190,26 @@ def find_match_in_expected_checklist(session_id, extracted_items, demanding_even
             matches = matcher(nlp(extracted_item["item"]))
             if len(matches) > 0:
                 logger.debug(f'Checklist item {item.description} completed')
+                is_completed = True if extracted_item["completed_by_trainee"].lower(
+                ) == "yes" else False
+                completion_time = extracted_item["start_time"] if extracted_item["completed_by_trainee"].lower(
+                ) == "yes" else None
                 checklist_adherance.append(
-                    {"checklist_item": item.description, "completed": True, "importance": item.importance, "completion_time": extracted_item["start_time"]/1000})
-                create_checklist_item_adherence(session_id, demanding_event.id, item.id, True, extracted_item["start_time"]/1000)
+                    {"checklist_item": item.description, "completed": is_completed, "importance": item.importance, "completion_time": completion_time})
+                create_checklist_item_adherence(
+                    session_id, demanding_event.id, item.id, is_completed, completion_time)
                 item_matched = True
         if not item_matched:
             checklist_adherance.append(
-                {"checklist_item": item["item"], "completed": False, "importance": item["importance"], "completion_time": None})
-            create_checklist_item_adherence(session_id, demanding_event.id, item.id, True)
+                {"checklist_item": item.description, "completed": False, "importance": item.importance, "completion_time": None})
+            create_checklist_item_adherence(
+                session_id, demanding_event.id, item.id, False, None)
     return checklist_adherance
 
 
 class ChecklistItem(BaseModel):
     item: str
+    completed_by_trainee: str
     start_time: float = Field(..., multipleOfPrecision=0.01)
 
     class Config:
@@ -250,7 +263,8 @@ def get_communication_adherance(transcript, session, demanding_event, path, mode
         inputs = [{"role": "system", "content": get_prompt_for_demanding_event(session, demanding_event)}, {
             "role": "user", "content": f"Transcript - {generate_formatted_transcript(partial_transcript, logger)}"}]
         parser = JsonSchemaParser(Checklist.schema())
-        prefix_function = build_transformers_prefix_allowed_tokens_fn(tokenizer, parser)
+        prefix_function = build_transformers_prefix_allowed_tokens_fn(
+            tokenizer, parser)
         tokenized_inputs = tokenizer.apply_chat_template(
             inputs, tokenize=False, add_generation_prompt=True)
         tokenized_inputs = tokenizer(
@@ -267,6 +281,7 @@ def get_communication_adherance(transcript, session, demanding_event, path, mode
             all_responses_for_demanding_event.extend(responses)
     checklist_items = all_responses_for_demanding_event
     if checklist_items:
+        print(checklist_items)
         checklist_adherance = find_match_in_expected_checklist(
             session.id, checklist_items, demanding_event, logger)
         with open(f'{path}/checklist_adherance.csv', mode='w', newline='') as file:

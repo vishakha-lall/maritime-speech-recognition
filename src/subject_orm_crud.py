@@ -17,7 +17,13 @@ class Subject(Base):
     def __repr__(self):
         return f"<Subject(id={self.id}, alias={self.alias}, client_id={self.client_id})>"
 
-
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'subject': self.alias,
+            'client_id': self.client_id
+        }
+    
 def get_subject_by_id(id):
     session = get_session()
     subject = session.query(Subject).filter(
