@@ -44,6 +44,13 @@ def get_session_by_subject_id_exercise_id(subject_id, exercise_id):
     return recording_session
 
 
+def get_sessions_by_subject_id(subject_id):
+    session = get_session()
+    recording_sessions = session.query(Session).filter(Session.subject_id == subject_id).all()
+    session.close()
+    return recording_sessions
+
+ 
 def get_all_sessions():
     session = get_session()
     recording_sessions = session.query(Session).all()
