@@ -1,0 +1,3 @@
+docker kill maritime-speech-api
+docker container rm maritime-speech-api
+docker run -d --name maritime-speech-api -p 8001:8000 -e DB_USER=user  -e DB_PASSWORD=password   -e DB_HOST=192.168.1.26   -e DB_NAME=aicatsan   -v "D:\projects\aictasan-ASR\maritime-speech-processing\src\models:/app/models"   -v "D:\projects\aictasan-ASR\maritime-speech-processing\src\data:/app/data"   -v "D:\projects\aictasan-ASR\maritime-speech-processing\src\videos:/app/videos"   maritime-speech-api

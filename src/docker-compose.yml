@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  maritime-api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./models:/app/models
+      - ./data:/app/data
+      - ./results:/app/results
+      - ./temp:/app/temp
+      - ./videos:/app/videos  # Mount your video files here
+    environment:
+      - PYTHONPATH=/app
+      # Update this DATABASE_URL to point to your existing database
+      - DATABASE_URL=mysql+pymysql://username:password@host:port/database_name
+    restart: unless-stopped
+    network_mode: host  # Use host network to access existing database

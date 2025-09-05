@@ -1,0 +1,71 @@
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env
+pip-log.txt
+pip-delete-this-directory.txt
+.venv
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+temp/
+*.tmp
+*.temp
+
+# Large model files (download separately)
+models/
+*.bin
+*.safetensors
+*.pt
+*.pth
+
+# Results and outputs
+results/
+output/
+
+# Videos (mount as volume)
+videos/
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# Documentation
+README.md
+docs/
+*.md
+
+# Environment files
+.env
+.env.local
+
+# Test files
+test_*
+*_test.py
+tests/
